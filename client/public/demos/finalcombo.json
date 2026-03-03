@@ -1,0 +1,58 @@
+{
+    "game": {
+        "name": "placeholder-test",
+        "turns": 0
+    },
+    "rules": [
+        {
+            "condition": {
+                "stat": "health",
+                "operator": "<=",
+                "value": 0
+            },
+            "effect": "eliminate"
+        }
+    ],
+    "battlers": [
+        {
+            "name": "player",
+            "battlerType": "player",
+            "targetType": "enemy",
+            "stats": {
+                "health": 50,
+                "mana": 50
+            },
+            "skills": ["bigAttack","attack"]
+        },
+        {
+            "name": "enemy",
+            "battlerType": "enemy",
+            "targetType": "player",
+            "stats": {
+                "health": 90
+            },
+            "skills": ["attack","bigAttack"]
+        }
+    ],
+    "skills": 
+    [
+        {
+            "name": "attack",
+            "effects": [
+                {
+                    "value": 9,
+                    "target": "default"
+                }
+            ]
+        },
+        {
+            "name": "bigAttack",
+            "effects": [
+                {
+                    "value": 17,
+                    "target": "default"
+                }
+            ]
+        }
+    ]
+}

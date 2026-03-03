@@ -1,0 +1,96 @@
+{
+    "game": {
+        "name": "finalcombo",
+        "turns": 0
+    },
+    "rules": [
+        {
+            "condition": {
+                "stat": "health",
+                "operator": "<=",
+                "value": 0
+            },
+            "effect": "eliminate"
+        }
+    ],
+    "battlers": [
+        {
+            "name": "player",
+            "battlerType": "ally",
+            "stats": {
+                "health": 100,
+                "mana": 50
+            },
+            "skills": [
+                {
+                    "name": "attack",
+                    "effects": [
+                        {
+                            "value": 20
+                        }
+                    ]
+                },
+                {
+                    "name": "drain",
+                    "effects": [
+                        {
+                            "value": 10
+                        }
+                    ]
+                },
+                {
+                    "name": "heal",
+                    "effects": [
+                        {
+                            "value": 5
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "enemy",
+            "battlerType": "enemy",
+            "stats": {
+                "health": 180
+            },
+            "skills": [
+                {
+                    "name": "attack",
+                    "effects": [
+                        {
+                            "value": 3
+                        }
+                    ]
+                },
+                {
+                    "name": "heal",
+                    "effects": [
+                        {
+                            "value": 10
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "skills": 
+    [
+        {
+            "name": "attack",
+            "effects": [
+                {
+                    "value": 3
+                }
+            ]
+        },
+        {
+            "name": "bigAttack",
+            "effects": [
+                {
+                    "value": 10
+                }
+            ]
+        }
+    ]
+}
