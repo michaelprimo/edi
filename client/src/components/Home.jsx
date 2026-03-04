@@ -47,7 +47,7 @@ const Home = () => {
                 ))}
 
                 <strong>{JSON.stringify(demoData)}</strong>
-                <Engine data={demoData} />
+                <Engine JSONData={demoData} />
             </ul>
         </div>
     );
