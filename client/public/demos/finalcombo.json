@@ -11,6 +11,14 @@
                 "value": 0
             },
             "effect": "eliminate"
+        },
+        {
+            "condition": {
+                "stat": "mana",
+                "operator": "<=",
+                "value": 0
+            },
+            "effect": "eliminate"
         }
     ],
     "battlers": [
@@ -20,7 +28,7 @@
             "targetType": "enemy",
             "stats": {
                 "health": 50,
-                "mana": 50
+                "mana": 10
             },
             "skills": ["bigAttack","attack"]
         },
@@ -29,7 +37,8 @@
             "battlerType": "enemy",
             "targetType": "player",
             "stats": {
-                "health": 90
+                "health": 90,
+                "mana": 30
             },
             "skills": ["attack","bigAttack"]
         }
@@ -41,7 +50,8 @@
             "effects": [
                 {
                     "value": 9,
-                    "target": "default"
+                    "targetSkill": "default",
+                    "targetStat": "mana"
                 }
             ]
         },
@@ -50,7 +60,8 @@
             "effects": [
                 {
                     "value": 17,
-                    "target": "default"
+                    "targetSkill": "default",
+                    "targetStat": "health"
                 }
             ]
         }

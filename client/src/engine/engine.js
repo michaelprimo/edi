@@ -2,14 +2,15 @@ export function checkRuleCondition(mainRules, battlerValue)
     {
         let ruleValue = mainRules[0].condition.value; 
         let ruleOperator = mainRules[0].condition.operator;
+        let ruleStat = mainRules[0].condition.stat;
 
         switch(ruleOperator) 
         {
-        case "=":  return (battlerValue == ruleValue);
-        case "<":  return (battlerValue < ruleValue);
-        case ">":  return (battlerValue > ruleValue);
-        case ">=": return (battlerValue >= ruleValue);
-        case "<=": return (battlerValue <= ruleValue);
+        case "=":  return (battlerValue.stats[ruleStat] == ruleValue);
+        case "<":  return (battlerValue.stats[ruleStat] < ruleValue);
+        case ">":  return (battlerValue.stats[ruleStat] > ruleValue);
+        case ">=": return (battlerValue.stats[ruleStat] >= ruleValue);
+        case "<=": return (battlerValue.stats[ruleStat] <= ruleValue);
         default:   return false;
         }
     }
@@ -19,10 +20,10 @@ export function getValuefromSkill(dataSkill, currentBattlers, battlerIndex, skil
         let skillSelected = currentBattlers[battlerIndex].skills[skillToUse];
 
         // .find() cerca l'oggetto che soddisfa la condizione e lo restituisce subito
-        let skillData = dataSkill.find(s => s.name === skillSelected);
+        let skillFound = dataSkill.find(s => s.name === skillSelected);
 
-        if (skillData && skillData.effects && skillData.effects.length > 0) {
-            return {"value": skillData.effects[0].value, "target": skillData.effects[0].target};
+        if (skillFound && skillFound.effects && skillFound.effects.length > 0) {
+            return {"value": skillFound.effects[0].value, "targetSkill": skillFound.effects[0].targetSkill, "targetStat": skillFound.effects[0].targetStat};
         }
 
         console.warn("Skill non trovata o senza effetti!");
@@ -50,34 +51,52 @@ export function shuffleObjects(array) {
     return shuffled;
     }
 
+
+export function validateData(data) {
+    const rules = data.rules;
+    const battlers = data.battlers;
+
+    // controlla tutte le regole
+    const areRulesOkay = rules.every(rule => {
+        const statName = rule.condition.stat;
+
+        // ogni battler deve avere questa stat
+        return battlers.every(battler => battler.stats.hasOwnProperty(statName));
+    });
+
+    if (!areRulesOkay) {
+        return "Not every battler has the stats required by the rules. Check your JSON!";
+    }
+
+    return true;
+}
+
 export function runEngine(JSONData)
     {
 
         const data = structuredClone(JSONData); 
  
-        let originalBattlers = structuredClone(data.battlers);
-        let currentBattlers;
-        currentBattlers = structuredClone(originalBattlers);
-        let damageSkill;
+        let currentBattlers = structuredClone(data.battlers);
+        let selectedSkill;
         let checkGameOver = false;
         let nameBattlerDefeated;
          
         
-        while(checkGameOver == false && data.game.turns <= 30)
+        while(!checkGameOver && data.game.turns <= 30)
         {
             data.game.turns++;
             currentBattlers = shuffleObjects(currentBattlers);
             
             for(let i = 0; i<currentBattlers.length; i++)
             {
-                let battlerKeys = Object.keys(currentBattlers[i].stats);
-                damageSkill = getValuefromSkill(data.skills, currentBattlers, i, 0);
                 
-                let chooseTarget = getTargetForSkill(currentBattlers, i, damageSkill["target"]);
+                selectedSkill = getValuefromSkill(data.skills, currentBattlers, i, 0);
+                
+                let chooseTarget = getTargetForSkill(currentBattlers, i, selectedSkill["targetSkill"]);
 
-                chooseTarget[0].stats[battlerKeys[0]] -= damageSkill["value"];
-                console.log("Turno " + data.game.turns + ": " + currentBattlers[i].name +" attacca infliggendo " + damageSkill["value"] + " HP di danno al suo nemico! Adesso "+ chooseTarget[0].name +" ha " + chooseTarget[0].stats[battlerKeys[0]] + " HP");
-                checkGameOver = checkRuleCondition(data.rules, chooseTarget[0].stats[battlerKeys[0]]);
+                chooseTarget[0].stats[selectedSkill["targetStat"]] -= selectedSkill["value"];
+                console.log("Turno " + data.game.turns + ": " + currentBattlers[i].name +" attacca infliggendo " + selectedSkill["value"] + " HP di danno al suo nemico! Adesso "+ chooseTarget[0].name +" ha " + chooseTarget[0].stats[selectedSkill["targetStat"]] + " HP");
+                checkGameOver = checkRuleCondition(data.rules, chooseTarget[0]);
                 if(checkGameOver === true)
                 {
                     nameBattlerDefeated = chooseTarget[0].name;
