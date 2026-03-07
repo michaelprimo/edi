@@ -23,7 +23,7 @@ export function getValuefromSkill(dataSkill, currentBattlers, battlerIndex, skil
         let skillFound = dataSkill.find(s => s.name === skillSelected);
 
         if (skillFound && skillFound.effects && skillFound.effects.length > 0) {
-            return {"value": skillFound.effects[0].value, "targetSkill": skillFound.effects[0].targetSkill, "targetStat": skillFound.effects[0].targetStat};
+            return skillFound;
         }
 
         console.warn("Skill non trovata o senza effetti!");
@@ -80,7 +80,7 @@ export function runEngine(JSONData)
         let selectedSkill;
         let checkGameOver = false;
         let nameBattlerDefeated;
-         
+        let statusAddedFromSkill;
         
         while(!checkGameOver && data.game.turns <= 30)
         {
@@ -89,13 +89,36 @@ export function runEngine(JSONData)
             
             for(let i = 0; i<currentBattlers.length; i++)
             {
-                
+                console.log("currentBattlers: ", currentBattlers);
                 selectedSkill = getValuefromSkill(data.skills, currentBattlers, i, 0);
-                
-                let chooseTarget = getTargetForSkill(currentBattlers, i, selectedSkill["targetSkill"]);
 
-                chooseTarget[0].stats[selectedSkill["targetStat"]] -= selectedSkill["value"];
-                console.log("Turno " + data.game.turns + ": " + currentBattlers[i].name +" attacca infliggendo " + selectedSkill["value"] + " HP di danno al suo nemico! Adesso "+ chooseTarget[0].name +" ha " + chooseTarget[0].stats[selectedSkill["targetStat"]] + " HP");
+                let chooseTarget = getTargetForSkill(currentBattlers, i, selectedSkill.effects[0].targetSkill);
+                console.log("chooseTarget: " + JSON.stringify(chooseTarget));
+                console.log("Prima: " + currentBattlers[i].name + " Target " + chooseTarget[0].name + " HP: " + chooseTarget[0].stats["health"] + " Target MP: " + chooseTarget[0].stats["mana"]);
+                for(let j = 0; j<selectedSkill.effects.length; j++)
+                {
+                    chooseTarget[0].stats[selectedSkill.effects[j].targetStat] -= selectedSkill.effects[j].value;
+                    if(selectedSkill.effects[j].addStatus)
+                    {
+                        if (!chooseTarget[0].status) {
+                            chooseTarget[0].status = [];
+                        }
+                        
+                        statusAddedFromSkill = data.status.find(chosenStatus => chosenStatus.name === selectedSkill.effects[j].addStatus);
+                        console.log("status: " + chooseTarget[0].status);
+                        
+                        let checkIfStatusExists = chooseTarget[0].status.find(findStatus => findStatus.name === selectedSkill.effects[j].addStatus);
+
+                        if(checkIfStatusExists === undefined)
+                        {
+                            chooseTarget[0].status.push(statusAddedFromSkill);
+                        }
+                        
+                        
+                    } 
+                }
+                console.log("Dopo: " + currentBattlers[i].name + " Target " + chooseTarget[0].name + " HP: " + chooseTarget[0].stats["health"] + " Target MP: " + chooseTarget[0].stats["mana"]);
+
                 checkGameOver = checkRuleCondition(data.rules, chooseTarget[0]);
                 if(checkGameOver === true)
                 {

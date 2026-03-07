@@ -27,20 +27,44 @@
             "battlerType": "player",
             "targetType": "enemy",
             "stats": {
-                "health": 50,
+                "health": 80,
                 "mana": 10
             },
-            "skills": ["bigAttack","attack"]
+            "skills": ["bigAttack","attack"],
+            "status": []
+        },
+        {
+            "name": "player2",
+            "battlerType": "player",
+            "targetType": "enemy",
+            "stats": {
+                "health": 100,
+                "mana": 10
+            },
+            "skills": ["bigAttack","attack"],
+            "status": []
         },
         {
             "name": "enemy",
             "battlerType": "enemy",
             "targetType": "player",
             "stats": {
-                "health": 90,
+                "health": 120,
                 "mana": 30
             },
-            "skills": ["attack","bigAttack"]
+            "skills": ["attack","bigAttack"],
+            "status": []
+        },
+        {
+            "name": "enemy2",
+            "battlerType": "enemy",
+            "targetType": "player",
+            "stats": {
+                "health": 70,
+                "mana": 30
+            },
+            "skills": ["bigAttack","bigAttack"],
+            "status": []
         }
     ],
     "skills": 
@@ -51,7 +75,8 @@
                 {
                     "value": 9,
                     "targetSkill": "default",
-                    "targetStat": "mana"
+                    "targetStat": "health",
+                    "addStatus": "KO"
                 }
             ]
         },
@@ -59,11 +84,31 @@
             "name": "bigAttack",
             "effects": [
                 {
-                    "value": 17,
+                    "value": 23,
                     "targetSkill": "default",
-                    "targetStat": "health"
+                    "targetStat": "health",
+                    "addStatus": "KO"
                 }
             ]
+        }
+    ],
+    "status":
+    [
+        {
+            "name": "KO",
+            "turns": -1,
+            "effects":
+            {
+                "condition": "defeat"
+            }
+        },
+        {
+            "name": "Stun",
+            "turns": 3,
+            "effects":
+            {
+                "condition": "noAction"
+            }
         }
     ]
 }
