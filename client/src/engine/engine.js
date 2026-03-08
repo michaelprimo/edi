@@ -1,18 +1,47 @@
-export function checkRuleCondition(mainRules, battlerValue)
+export function checkRuleCondition(mainRules, battlerData, statusData)
     {
         let ruleValue = mainRules[0].condition.value; 
         let ruleOperator = mainRules[0].condition.operator;
         let ruleStat = mainRules[0].condition.stat;
 
+        //console.log("battlerData: ", battlerData);
+        //console.log("battlerData type:", Array.isArray(battlerData), battlerData);
+        let ruleResults;
+        let checkBattlerStatus;
+        
         switch(ruleOperator) 
         {
-        case "=":  return (battlerValue.stats[ruleStat] == ruleValue);
-        case "<":  return (battlerValue.stats[ruleStat] < ruleValue);
-        case ">":  return (battlerValue.stats[ruleStat] > ruleValue);
-        case ">=": return (battlerValue.stats[ruleStat] >= ruleValue);
-        case "<=": return (battlerValue.stats[ruleStat] <= ruleValue);
-        default:   return false;
+            case "=":  ruleResults = battlerData.filter(b => b.stats[ruleStat] == ruleValue); break;
+            case "<":  ruleResults = battlerData.filter(b => b.stats[ruleStat] < ruleValue); break;
+            case ">":  ruleResults = battlerData.filter(b => b.stats[ruleStat] > ruleValue); break;
+            case ">=": ruleResults = battlerData.filter(b => b.stats[ruleStat] >= ruleValue); break;
+            case "<=": ruleResults = battlerData.filter(b => b.stats[ruleStat] <= ruleValue); break;
+            default: ruleResults = [];
         }
+        
+        console.log("ruleResults: ", structuredClone(ruleResults));
+
+        if(mainRules[0].applyStatus)
+        {
+            console.log("Status added prima: ", checkBattlerStatus);
+               
+            ruleResults.forEach(battler => {
+                const hasStatus = battler.status.some(s => s.name === mainRules[0].applyStatus);
+                if(!hasStatus) {
+                    const getStatus = statusData.find(s => s.name === mainRules[0].applyStatus);
+                    console.log("getStatus: ", getStatus);
+                    battler.status.push(getStatus);
+                }
+            });  
+        }
+        console.log("battlerData: ", structuredClone(battlerData));
+
+        //aggiungere la logica di vittoria e sconfitta con una altra regola e aggiungere che 
+        //in declareWinner e declareLoser si può mettere un gruppo e il targetDefault di quel gruppo.
+
+        return ruleResults;
+
+
     }
 
 export function getValuefromSkill(dataSkill, currentBattlers, battlerIndex, skillToUse) 
@@ -78,23 +107,28 @@ export function runEngine(JSONData)
  
         let currentBattlers = structuredClone(data.battlers);
         let selectedSkill;
-        let checkGameOver = false;
+        let checkRules = false;
         let nameBattlerDefeated;
         let statusAddedFromSkill;
         
-        while(!checkGameOver && data.game.turns <= 30)
+        while(data.game.turns <= 10)
         {
             data.game.turns++;
             currentBattlers = shuffleObjects(currentBattlers);
             
+            //checkRuleCondition onTurnStart
+
             for(let i = 0; i<currentBattlers.length; i++)
             {
-                console.log("currentBattlers: ", currentBattlers);
+                //console.log("currentBattlers: ", currentBattlers);
                 selectedSkill = getValuefromSkill(data.skills, currentBattlers, i, 0);
 
                 let chooseTarget = getTargetForSkill(currentBattlers, i, selectedSkill.effects[0].targetSkill);
-                console.log("chooseTarget: " + JSON.stringify(chooseTarget));
+                //console.log("chooseTarget: " + JSON.stringify(chooseTarget));
                 console.log("Prima: " + currentBattlers[i].name + " Target " + chooseTarget[0].name + " HP: " + chooseTarget[0].stats["health"] + " Target MP: " + chooseTarget[0].stats["mana"]);
+                
+                //checkRuleCondition onActionStart
+
                 for(let j = 0; j<selectedSkill.effects.length; j++)
                 {
                     chooseTarget[0].stats[selectedSkill.effects[j].targetStat] -= selectedSkill.effects[j].value;
@@ -105,26 +139,35 @@ export function runEngine(JSONData)
                         }
                         
                         statusAddedFromSkill = data.status.find(chosenStatus => chosenStatus.name === selectedSkill.effects[j].addStatus);
-                        console.log("status: " + chooseTarget[0].status);
+                        //console.log("status: " + chooseTarget[0].status);
                         
                         let checkIfStatusExists = chooseTarget[0].status.find(findStatus => findStatus.name === selectedSkill.effects[j].addStatus);
 
                         if(checkIfStatusExists === undefined)
                         {
-                            chooseTarget[0].status.push(statusAddedFromSkill);
+                            //chooseTarget[0].status.push(statusAddedFromSkill);
                         }
                         
                         
                     } 
                 }
                 console.log("Dopo: " + currentBattlers[i].name + " Target " + chooseTarget[0].name + " HP: " + chooseTarget[0].stats["health"] + " Target MP: " + chooseTarget[0].stats["mana"]);
+                //checkRuleCondition onActionEnd: da sistemare nel caso non trovi nulla
 
-                checkGameOver = checkRuleCondition(data.rules, chooseTarget[0]);
-                if(checkGameOver === true)
+                console.log("chooseTarget: ", chooseTarget[0] , "currentBattlers: ", structuredClone(currentBattlers));
+                checkRules = checkRuleCondition(data.rules.filter(rule => rule.trigger == "onActionEnd"), currentBattlers, data.status);
+                //console.log(checkRules);
+                /*
+                if(checkRules === true)
                 {
-                    nameBattlerDefeated = chooseTarget[0].name;
-                    break;
+                    
+                    //nameBattlerDefeated = chooseTarget[0].name;
+                    //break;
+
                 }
+                */
+
+                //checkRuleCondition onTurnEnd
             }
         }
         return [nameBattlerDefeated, data.game.turns];

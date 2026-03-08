@@ -7,11 +7,12 @@ export default function Engine({ JSONData })
 useEffect(() => {
 
     let executeTurn;
-    let checkValidation = validateData(JSONData);
+    //let checkValidation = validateData(JSONData);
 
+    let checkValidation = true;
     if(checkValidation === true)
     {
-        for(let i = 0; i<5; i++)
+        for(let i = 0; i<1; i++)
         {
             executeTurn = runEngine(JSONData);
             console.log(`${executeTurn[0]} ha perso in ${executeTurn[1]} turni`);

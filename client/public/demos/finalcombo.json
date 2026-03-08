@@ -1,24 +1,28 @@
 {
     "game": {
-        "name": "placeholder-test",
+        "name": "finalcombo",
         "turns": 0
     },
     "rules": [
         {
+            "trigger": "onActionEnd",
+            "checkBattlerGroup": "all",
             "condition": {
                 "stat": "health",
                 "operator": "<=",
                 "value": 0
             },
-            "effect": "eliminate"
+            "applyStatus": "KO"
         },
         {
+            "trigger": "onActionEnd",
+            "checkBattlerGroup": "player",
             "condition": {
-                "stat": "mana",
-                "operator": "<=",
-                "value": 0
+                "haveStatus": "KO"
             },
-            "effect": "eliminate"
+            "declareWinnerGroup": "enemy",
+            "declareLoserGroup": "player",
+            "applyInvertedTargets": true
         }
     ],
     "battlers": [
