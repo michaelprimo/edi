@@ -1,48 +1,67 @@
-export function checkRuleCondition(mainRules, battlerData, statusData)
-    {
-        let ruleValue = mainRules[0].condition.value; 
-        let ruleOperator = mainRules[0].condition.operator;
-        let ruleStat = mainRules[0].condition.stat;
+export function checkRuleCondition(mainRules, battlerData, statusData) {
+    
+    let ruleResults = [];
+    let checkStatusResults = [];
+    let setSimulationResults = [];
 
-        //console.log("battlerData: ", battlerData);
-        //console.log("battlerData type:", Array.isArray(battlerData), battlerData);
-        let ruleResults;
-        let checkBattlerStatus;
+    mainRules.forEach(rule => {
         
-        switch(ruleOperator) 
-        {
-            case "=":  ruleResults = battlerData.filter(b => b.stats[ruleStat] == ruleValue); break;
-            case "<":  ruleResults = battlerData.filter(b => b.stats[ruleStat] < ruleValue); break;
-            case ">":  ruleResults = battlerData.filter(b => b.stats[ruleStat] > ruleValue); break;
-            case ">=": ruleResults = battlerData.filter(b => b.stats[ruleStat] >= ruleValue); break;
-            case "<=": ruleResults = battlerData.filter(b => b.stats[ruleStat] <= ruleValue); break;
-            default: ruleResults = [];
+
+        // Tipo 1: condizione su stat
+        if(rule.condition.stat) {
+            const { stat, operator, value } = rule.condition;
+            switch(operator) {
+                case "=":  ruleResults = battlerData.filter(b => b.stats[stat] == value); break;
+                case "<":  ruleResults = battlerData.filter(b => b.stats[stat] < value); break;
+                case ">":  ruleResults = battlerData.filter(b => b.stats[stat] > value); break;
+                case ">=": ruleResults = battlerData.filter(b => b.stats[stat] >= value); break;
+                case "<=": ruleResults = battlerData.filter(b => b.stats[stat] <= value); break;
+                default: ruleResults = [];
+            }
         }
-        
-        console.log("ruleResults: ", structuredClone(ruleResults));
 
-        if(mainRules[0].applyStatus)
-        {
-            console.log("Status added prima: ", checkBattlerStatus);
-               
-            ruleResults.forEach(battler => {
-                const hasStatus = battler.status.some(s => s.name === mainRules[0].applyStatus);
-                if(!hasStatus) {
-                    const getStatus = statusData.find(s => s.name === mainRules[0].applyStatus);
-                    console.log("getStatus: ", getStatus);
-                    battler.status.push(getStatus);
+        // Tipo 2: condizione su status
+        if(rule.condition.haveStatus) {
+            ruleResults = battlerData.filter(b => 
+                b.status.some(s => s.name === rule.condition.haveStatus)
+            );
+            
+            //console.log("ruleResults: ", structuredClone(ruleResults));
+            
+            checkStatusResults = ruleResults.filter(s => s.battlerType === rule.condition.checkBattlerGroup);
+           // console.log("statusResults: ", structuredClone(checkStatusResults));
+           // console.log(battlerData.filter(s => s.battlerType === rule.condition.checkBattlerGroup));
+            if (JSON.stringify(checkStatusResults) === JSON.stringify(battlerData.filter(s => s.battlerType == rule.condition.checkBattlerGroup)))   
+            {
+                if(rule.effects.declareWinnerGroup)
+                {
+                    setSimulationResults.push(battlerData.filter(s => s.battlerType === rule.effects.declareWinnerGroup));
                 }
-            });  
+                if(rule.effects.declareLoserGroup)
+                {
+                    setSimulationResults.push(battlerData.filter(s => s.battlerType === rule.effects.declareLoserGroup));
+                }
+                
+            }
+            //console.log("Simulation Results: ", setSimulationResults);
         }
-        console.log("battlerData: ", structuredClone(battlerData));
-
-        //aggiungere la logica di vittoria e sconfitta con una altra regola e aggiungere che 
-        //in declareWinner e declareLoser si può mettere un gruppo e il targetDefault di quel gruppo.
-
-        return ruleResults;
-
-
-    }
+        //console.log(rule.effects.applyStatus);
+        // Applica status se previsto
+        if(rule.effects.applyStatus) {
+            ruleResults.forEach(battler => {
+                const hasStatus = battler.status.some(s => s.name === rule.effects.applyStatus);
+                
+                if(!hasStatus) {
+                    const getStatus = statusData.find(s => s.name === rule.effects.applyStatus);
+                    battler.status.push(getStatus);
+                    //console.log(battler.name);
+                }
+            });
+        }
+    });
+    
+    return setSimulationResults;
+}
 
 export function getValuefromSkill(dataSkill, currentBattlers, battlerIndex, skillToUse) 
     {
@@ -111,7 +130,7 @@ export function runEngine(JSONData)
         let nameBattlerDefeated;
         let statusAddedFromSkill;
         
-        while(data.game.turns <= 10)
+        while(checkRules == "" && data.game.turns <= 10)
         {
             data.game.turns++;
             currentBattlers = shuffleObjects(currentBattlers);
@@ -145,7 +164,8 @@ export function runEngine(JSONData)
 
                         if(checkIfStatusExists === undefined)
                         {
-                            //chooseTarget[0].status.push(statusAddedFromSkill);
+                            chooseTarget[0].status.push(statusAddedFromSkill);
+                            console.log("STUN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                         }
                         
                         
@@ -154,9 +174,9 @@ export function runEngine(JSONData)
                 console.log("Dopo: " + currentBattlers[i].name + " Target " + chooseTarget[0].name + " HP: " + chooseTarget[0].stats["health"] + " Target MP: " + chooseTarget[0].stats["mana"]);
                 //checkRuleCondition onActionEnd: da sistemare nel caso non trovi nulla
 
-                console.log("chooseTarget: ", chooseTarget[0] , "currentBattlers: ", structuredClone(currentBattlers));
+                console.log("chooseTarget: ", structuredClone(chooseTarget[0]) , "currentBattlers: ", structuredClone(currentBattlers));
                 checkRules = checkRuleCondition(data.rules.filter(rule => rule.trigger == "onActionEnd"), currentBattlers, data.status);
-                //console.log(checkRules);
+                //console.log("Qui dovrebbero arrivare i sconfitti:", structuredClone(checkRules));
                 /*
                 if(checkRules === true)
                 {
@@ -170,7 +190,7 @@ export function runEngine(JSONData)
                 //checkRuleCondition onTurnEnd
             }
         }
-        return [nameBattlerDefeated, data.game.turns];
+        return [checkRules, data.game.turns];
 
         
     }

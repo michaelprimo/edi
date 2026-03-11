@@ -15,7 +15,7 @@ useEffect(() => {
         for(let i = 0; i<1; i++)
         {
             executeTurn = runEngine(JSONData);
-            console.log(`${executeTurn[0]} ha perso in ${executeTurn[1]} turni`);
+            console.log(`Il gruppo ${executeTurn[0][0][0].battlerType} ha perso in ${executeTurn[1]} turni`);
         }
     }
     else

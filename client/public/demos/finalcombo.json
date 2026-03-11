@@ -6,23 +6,45 @@
     "rules": [
         {
             "trigger": "onActionEnd",
-            "checkBattlerGroup": "all",
+            
             "condition": {
+                "checkBattlerGroup": "all",
                 "stat": "health",
                 "operator": "<=",
                 "value": 0
             },
-            "applyStatus": "KO"
+            "effects": 
+                {
+                    
+                    "applyStatus": "KO"
+                }
+            
+            
         },
         {
             "trigger": "onActionEnd",
-            "checkBattlerGroup": "player",
             "condition": {
+                "checkBattlerGroup": "player",
                 "haveStatus": "KO"
             },
-            "declareWinnerGroup": "enemy",
-            "declareLoserGroup": "player",
-            "applyInvertedTargets": true
+            "effects": 
+                {
+                    "declareWinnerGroup": "enemy",
+                    "declareLoserGroup": "player"
+                }
+        },
+         {
+            "trigger": "onActionEnd",
+            "condition": {
+                "checkBattlerGroup": "enemy",
+                "haveStatus": "KO"
+            },
+            "effects": 
+                {
+                    
+                    "declareWinnerGroup": "player",
+                    "declareLoserGroup": "enemy"
+                }
         }
     ],
     "battlers": [
@@ -31,7 +53,7 @@
             "battlerType": "player",
             "targetType": "enemy",
             "stats": {
-                "health": 80,
+                "health": 10,
                 "mana": 10
             },
             "skills": ["bigAttack","attack"],
@@ -42,7 +64,7 @@
             "battlerType": "player",
             "targetType": "enemy",
             "stats": {
-                "health": 100,
+                "health": 10,
                 "mana": 10
             },
             "skills": ["bigAttack","attack"],
@@ -53,8 +75,8 @@
             "battlerType": "enemy",
             "targetType": "player",
             "stats": {
-                "health": 120,
-                "mana": 30
+                "health": 10,
+                "mana": 10
             },
             "skills": ["attack","bigAttack"],
             "status": []
@@ -64,8 +86,8 @@
             "battlerType": "enemy",
             "targetType": "player",
             "stats": {
-                "health": 70,
-                "mana": 30
+                "health": 10,
+                "mana": 10
             },
             "skills": ["bigAttack","bigAttack"],
             "status": []
@@ -80,7 +102,7 @@
                     "value": 9,
                     "targetSkill": "default",
                     "targetStat": "health",
-                    "addStatus": "KO"
+                    "addStatus": "Stun"
                 }
             ]
         },
@@ -91,7 +113,7 @@
                     "value": 23,
                     "targetSkill": "default",
                     "targetStat": "health",
-                    "addStatus": "KO"
+                    "addStatus": "Stun"
                 }
             ]
         }
