@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { checkRuleCondition, getValuefromSkill, getTargetForSkill, shuffleObjects, validateData, runEngine } from '.././engine/engine.js';
+import { runEngine } from '.././engine/engine.js';
+import { validateData } from '.././engine/validateData.js';
 
 export default function Engine({ JSONData }) 
 {
@@ -14,8 +15,10 @@ useEffect(() => {
     {
         for(let i = 0; i<1; i++)
         {
+            //fare che una variabile prende i turni trascorsi e l'altra i risultati della partita
             executeTurn = runEngine(JSONData);
-            console.log(`Il gruppo ${executeTurn[0][0][0].battlerType} ha perso in ${executeTurn[1]} turni`);
+            console.log(executeTurn[0]);
+            console.log(`Il gruppo ${executeTurn[0][0].winners[0].battlerType} ha vinto in ${executeTurn[1]} turni`);
         }
     }
     else

@@ -54,7 +54,8 @@
             "targetType": "enemy",
             "stats": {
                 "health": 10,
-                "mana": 10
+                "mana": 10,
+                "attack": 100
             },
             "skills": ["bigAttack","attack"],
             "status": []
@@ -65,7 +66,8 @@
             "targetType": "enemy",
             "stats": {
                 "health": 10,
-                "mana": 10
+                "mana": 10,
+                "attack": 100
             },
             "skills": ["bigAttack","attack"],
             "status": []
@@ -76,7 +78,8 @@
             "targetType": "player",
             "stats": {
                 "health": 10,
-                "mana": 10
+                "mana": 10,
+                "attack": 100
             },
             "skills": ["attack","bigAttack"],
             "status": []
@@ -87,7 +90,8 @@
             "targetType": "player",
             "stats": {
                 "health": 10,
-                "mana": 10
+                "mana": 10,
+                "attack": 100
             },
             "skills": ["bigAttack","bigAttack"],
             "status": []
@@ -125,7 +129,8 @@
             "turns": -1,
             "effects":
             {
-                "condition": "defeat"
+                "isTargetable": false,
+                "canHaveTurns": false
             }
         },
         {
@@ -133,7 +138,27 @@
             "turns": 3,
             "effects":
             {
-                "condition": "noAction"
+                "canHaveTurns": false
+            }
+        },
+        {
+            "name": "Regen",
+            "turns": 3,
+            "effects":
+            {
+                "stat": "health",
+                "operator": "+",
+                "value": "5"
+            }
+        },
+        {
+            "name": "Power+",
+            "turns": 3,
+            "effects":
+            {
+                "stat": "attack",
+                "operator": "+",
+                "value": "25"
             }
         }
     ]
