@@ -32,35 +32,42 @@ return targetBattlers;
 export function runEngine(JSONData)
     {
         const data = structuredClone(JSONData); 
- 
-        data.battlers.forEach(battler => {
+        
+        data.battlers.forEach((battler, i) => {
             battler.isTargetable ??= true;
             battler.canHaveTurns ??= true;
-            battler.statModifiers ??= [];
+            battler.baseStats ??= structuredClone(battler.stats);
+            battler.id = i;
         });
 
         let currentBattlers = structuredClone(data.battlers);
         let selectedSkill;
-        let checkRules = false;
+        let checkRules = null;
+        let getWinners;
         let statusAddedFromSkill;
-        console.log("Edi v0.05: simulazione di debug");
-        while(checkRules == "" && data.game.turns <= 10)
+        let statusInstance;
+        console.log("Edi v0.06: simulazione di debug");
+        while(checkRules === null && data.game.turns <= 10)
         {
+
             data.game.turns++;
+            console.log("TURNO ", data.game.turns);
             currentBattlers = shuffleObjects(currentBattlers);
             
             //checkRuleCondition onTurnStart
-
+            
             for(let i = 0; i<currentBattlers.length; i++)
             {
-                checkStatus(currentBattlers[i], true);
+                checkStatus(data.battlers, currentBattlers[i], true);
                 if(currentBattlers[i].canHaveTurns === true)
                 {
                 selectedSkill = getValuefromSkill(data.skills, currentBattlers, i, 0);
 
                 let chooseTarget = getTargetForSkill(currentBattlers, i, selectedSkill.effects[0].targetSkill);
-                
-                console.log("Prima: " + currentBattlers[i].name + " Target " + chooseTarget[0].name + " HP: " + chooseTarget[0].stats["health"] + " Target MP: " + chooseTarget[0].stats["mana"]);
+
+                if(chooseTarget[0] !== undefined)
+                {
+                    console.log("Prima: " + currentBattlers[i].name + " Target " + chooseTarget[0].name + " HP: " + chooseTarget[0].stats["health"] + " Target MP: " + chooseTarget[0].stats["mana"]);
                 
                 //checkRuleCondition onActionStart
 
@@ -77,21 +84,40 @@ export function runEngine(JSONData)
                         statusAddedFromSkill = data.status.find(chosenStatus => chosenStatus.name === selectedSkill.effects[j].addStatus);
                         
                         let checkIfStatusExists = chooseTarget[0].status.find(findStatus => findStatus.name === selectedSkill.effects[j].addStatus);
-
+                        console.log("statusAddedFromSkill è: ", statusAddedFromSkill, " checkIfStatusExists: ", checkIfStatusExists);
                         if(checkIfStatusExists === undefined)
                         {
-                            chooseTarget[0].status.push(statusAddedFromSkill);
-                            console.log(chooseTarget[0].name, " ha ricevuto da una skill lo status: ", statusAddedFromSkill.name);
+                            statusInstance = structuredClone(statusAddedFromSkill);
+                            chooseTarget[0].status.push(statusInstance);
+                            console.log(chooseTarget[0].name, " ha ricevuto da una skill lo status: ", statusAddedFromSkill.name, "che dura: ", statusAddedFromSkill.turns, " turni");
                         }
                     } 
                 }
                 console.log("Dopo: " + currentBattlers[i].name + " Target " + chooseTarget[0].name + " HP: " + chooseTarget[0].stats["health"] + " Target MP: " + chooseTarget[0].stats["mana"]);
                 //checkRuleCondition onActionEnd: da sistemare nel caso non trovi nulla
-
-                checkRules = checkRuleCondition(data.rules.filter(rule => rule.trigger == "onActionEnd"), currentBattlers, data.status);
-                checkStatus(currentBattlers, false);
-                //dare il target o tutto currentBattlers al checkStatus
+                }
+                else
+                {
+                    console.log("NO TARGETS");
+                }
                 
+                
+
+                //checkRules = checkRuleCondition(data.rules.filter(rule => rule.trigger == "onActionEnd"), currentBattlers, data.status);
+                //checkStatus(data.battlers, currentBattlers, false);
+                
+                console.log("checkRules prima: ", structuredClone(checkRules));
+                checkRules = checkRuleCondition(data.rules.filter(rule => rule.trigger == "onActionEnd"), currentBattlers, data.status);
+                console.log("checkRules dopo: ", structuredClone(checkRules));
+
+                checkStatus(data.battlers, currentBattlers, false);
+
+                /*
+                if(winners !== null)
+                {
+                    getWinners = structuredClone(winners);
+                }
+                */
                 console.log("chooseTarget: ", structuredClone(chooseTarget[0]) , "currentBattlers: ", structuredClone(currentBattlers));
                 
                 }
@@ -99,7 +125,7 @@ export function runEngine(JSONData)
                 //checkRuleCondition onTurnEnd
             }
         }
-        return [checkRules, data.game.turns];
-
+        //return [winners, data.game.turns];
+        return checkRules;
         
     }

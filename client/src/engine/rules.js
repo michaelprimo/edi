@@ -60,5 +60,12 @@ export function checkRuleCondition(mainRules, battlerData, statusData) {
         }
     });
     
-    return setSimulationResults;
+    if(setSimulationResults.length > 0)
+    {
+        return setSimulationResults;
+    }
+    else 
+    {
+        return null;
+    }
 }

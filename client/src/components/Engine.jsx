@@ -17,8 +17,8 @@ useEffect(() => {
         {
             //fare che una variabile prende i turni trascorsi e l'altra i risultati della partita
             executeTurn = runEngine(JSONData);
-            console.log(executeTurn[0]);
-            console.log(`Il gruppo ${executeTurn[0][0].winners[0].battlerType} ha vinto in ${executeTurn[1]} turni`);
+            console.log("il gruppo ", executeTurn[0].winners[0].battlerType , " vince");
+            //console.log(`Il gruppo ${executeTurn.winners[0]} ha vinto`);
         }
     }
     else

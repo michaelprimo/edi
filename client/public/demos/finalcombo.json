@@ -103,10 +103,10 @@
             "name": "attack",
             "effects": [
                 {
-                    "value": 9,
+                    "value": 2,
                     "targetSkill": "default",
                     "targetStat": "health",
-                    "addStatus": "Stun"
+                    "addStatus": "Power+"
                 }
             ]
         },
@@ -114,10 +114,10 @@
             "name": "bigAttack",
             "effects": [
                 {
-                    "value": 23,
+                    "value": 3,
                     "targetSkill": "default",
                     "targetStat": "health",
-                    "addStatus": "Stun"
+                    "addStatus": "Power+"
                 }
             ]
         }
@@ -127,6 +127,8 @@
         {
             "name": "KO",
             "turns": -1,
+            "priority": 100,
+            "applyOnce": true,
             "effects":
             {
                 "isTargetable": false,
@@ -136,6 +138,8 @@
         {
             "name": "Stun",
             "turns": 3,
+            "priority": 80,
+            "applyOnce": true,
             "effects":
             {
                 "canHaveTurns": false
@@ -144,6 +148,8 @@
         {
             "name": "Regen",
             "turns": 3,
+            "priority": 50,
+            "applyOnce": false,
             "effects":
             {
                 "stat": "health",
@@ -154,6 +160,8 @@
         {
             "name": "Power+",
             "turns": 3,
+            "priority": 50,
+            "applyOnce": true,
             "effects":
             {
                 "stat": "attack",

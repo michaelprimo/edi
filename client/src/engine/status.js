@@ -1,51 +1,53 @@
-export function checkStatus(battler, takeTurn) {
-
+export function checkStatus(originalBattler, battler, takeTurn) 
+{
+    //console.log("takeTurn: ", takeTurn);
     for(let i=0; i<battler.length;i++)
     {
-
-    
-        if(battler[i].status === undefined || battler[i].status.length === 0) continue;
-
-        battler[i].status.forEach(status => {
-            const effects = status.effects;
-
-            // Tipo 1: modifica una stat (ha "stat" e "operator")
-            if(effects.stat) {
-                if(!battler[i].statModifiers) battler[i].statModifiers = [];
-                
-                const alreadyExists = battler[i].statModifiers.some(
-                    m => m.stat === effects.stat && m.source === status.name
-                );
-                
-                if(!alreadyExists) {
-                    battler[i].statModifiers.push({
-                        stat: effects.stat,
-                        value: Number(effects.value),
-                        source: status.name
-                    });
-                }
-            }
-            
-            // Tipo 2: proprietà diretta del battler[i] (isTargetable, canHaveTurns)
-            else {
-                Object.entries(effects).forEach(([key, value]) => {
-                    battler[i][key] = value;
-                });
-            }
-        });
-
-        // Scala i turni e rimuove gli status scaduti
-        if(takeTurn) {
-            battler[i].status = battler[i].status
-                .map(s => ({ ...s, turns: s.turns > 0 ? s.turns - 1 : s.turns }))
-                .filter(s => s.turns !== 0);
-                
-            // Rimuove anche i modifiers degli status scaduti
-            if(battler[i].statModifiers) {
-                battler[i].statModifiers = battler[i].statModifiers
-                    .filter(m => battler[i].status.some(s => s.name === m.source));
-            }
+        console.log(battler[i].name, " status prima: ", structuredClone(battler[i].status));
+        if(battler[i].status.length <= 0 || battler[i].status === undefined)
+        {
+            //console.log("Ehi," , battler[i].name, " è passato di qui senza status");
+            continue;
         }
+        else
+        {
 
+            battler[i].status.sort(
+            (a,b)=>(b.priority ?? 100) - (a.priority ?? 100)
+            );
+
+            battler[i].isTargetable = originalBattler[i].isTargetable;
+            battler[i].canHaveTurns = originalBattler[i].canHaveTurns;
+           
+            battler[i].status.forEach(status => {
+                console.log(battler[i].name, " ha ", status.name, " tra i suoi status");
+                if(status.effects.isTargetable !== undefined)
+                {
+                    //console.log("isTargetable di ", battler[i].name, " prima (stun): ", battler[i].isTargetable);
+                     battler[i].isTargetable = status.effects.isTargetable;
+                     //console.log("isTargetable di ", battler[i].name, " dopo (stun): ", battler[i].isTargetable);
+                }
+                if(status.effects.canHaveTurns !== undefined)
+                {
+                     battler[i].canHaveTurns = status.effects.canHaveTurns;
+                }
+                //sistemare il bug del && takeTurn == true che non fa funzionare tutto e vedere se questo codice toglie un turno a tutti
+                //i player (e non dovrebbe accadere) oppure no
+                if(status.turns > 0 )
+                {
+                    console.log("OH NO! MANCANO ANCORA ", status.turns, " TURNI!!!");
+                    status.turns--;
+                    console.log(status.name, " dentro ", battler[i].name, " sarà attivo ancora per ", status.turns, " turni");
+                    console.log(structuredClone(status))
+                }
+            });
+            
+            //lo lascio così per ora perchè so che in futuro ci saranno skill che toglieranno turni agli status e quindi
+            //dovrò mettere poi più controlli e varie
+            battler[i].status = battler[i].status.filter(s => s.turns !== 0);
+                    
+        }
+        console.log(battler[i].name, " status dopo: ", structuredClone(battler[i].status));
     }
+       
 }
