@@ -2,6 +2,8 @@ import { checkRuleCondition } from '.././engine/rules.js';
 import { shuffleObjects } from '.././engine/turnsystem.js';
 import { validateData } from '.././engine/validateData.js';
 import { checkStatus } from './status.js';
+import { applySkillDamageFormula } from './damage.js';
+import { triggerActions } from './trigger.js';
 
 export function getValuefromSkill(dataSkill, currentBattlers, battlerIndex, skillToUse) 
     {
@@ -38,6 +40,7 @@ export function runEngine(JSONData)
             battler.canHaveTurns ??= true;
             battler.baseStats ??= structuredClone(battler.stats);
             battler.id = i;
+            battler.checkStatusParams = [];
         });
 
         let currentBattlers = structuredClone(data.battlers);
@@ -46,7 +49,7 @@ export function runEngine(JSONData)
         let getWinners;
         let statusAddedFromSkill;
         let statusInstance;
-        console.log("Edi v0.06: simulazione di debug");
+        console.log("Edi v0.08: simulazione di debug");
         while(checkRules === null && data.game.turns <= 10)
         {
 
@@ -55,46 +58,51 @@ export function runEngine(JSONData)
             currentBattlers = shuffleObjects(currentBattlers);
             
             //checkRuleCondition onTurnStart
+            //sistemare il fatto che all'inizio del turno del battler ci deve essere questo boost
             
+            checkRules = triggerActions(data, currentBattlers, "onTurnStart");
+            //checkStatus(data, currentBattlers, "onTurnStart");
             for(let i = 0; i<currentBattlers.length; i++)
             {
-                checkStatus(data.battlers, currentBattlers[i], true);
                 if(currentBattlers[i].canHaveTurns === true)
                 {
-                selectedSkill = getValuefromSkill(data.skills, currentBattlers, i, 0);
+                    selectedSkill = getValuefromSkill(data.skills, currentBattlers, i, 0);
 
-                let chooseTarget = getTargetForSkill(currentBattlers, i, selectedSkill.effects[0].targetSkill);
+                    let chooseTarget = getTargetForSkill(currentBattlers, i, selectedSkill.effects[0].targetSkill);
+                    console.log("-------------------- target di ", currentBattlers[i].name, ": ", structuredClone(chooseTarget));
 
-                if(chooseTarget[0] !== undefined)
-                {
-                    console.log("Prima: " + currentBattlers[i].name + " Target " + chooseTarget[0].name + " HP: " + chooseTarget[0].stats["health"] + " Target MP: " + chooseTarget[0].stats["mana"]);
-                
-                //checkRuleCondition onActionStart
-
-                for(let j = 0; j<selectedSkill.effects.length; j++)
-                {
-                    chooseTarget[0].stats[selectedSkill.effects[j].targetStat] -= selectedSkill.effects[j].value;
-                    if(selectedSkill.effects[j].addStatus)
+                    if(chooseTarget[0] !== undefined)
                     {
-                        if (!chooseTarget[0].status) 
+                        console.log("Prima: " + currentBattlers[i].name + " Target " + chooseTarget[0].name + " HP: " + chooseTarget[0].stats["health"] + " Target MP: " + chooseTarget[0].stats["mana"]);
+                    
+                    //checkRuleCondition onActionStart
+
+                    for(let j = 0; j<selectedSkill.effects.length; j++)
+                    {
+                        chooseTarget[0].stats[selectedSkill.effects[j].targetStat] = applySkillDamageFormula(selectedSkill.effects[j].value, chooseTarget[0].stats[selectedSkill.effects[j].targetStat], selectedSkill.effects[j].operator);
+                        if(selectedSkill.effects[j].addStatus)
                         {
-                            chooseTarget[0].status = [];
-                        }
-                        
-                        statusAddedFromSkill = data.status.find(chosenStatus => chosenStatus.name === selectedSkill.effects[j].addStatus);
-                        
-                        let checkIfStatusExists = chooseTarget[0].status.find(findStatus => findStatus.name === selectedSkill.effects[j].addStatus);
-                        console.log("statusAddedFromSkill è: ", statusAddedFromSkill, " checkIfStatusExists: ", checkIfStatusExists);
-                        if(checkIfStatusExists === undefined)
-                        {
-                            statusInstance = structuredClone(statusAddedFromSkill);
-                            chooseTarget[0].status.push(statusInstance);
-                            console.log(chooseTarget[0].name, " ha ricevuto da una skill lo status: ", statusAddedFromSkill.name, "che dura: ", statusAddedFromSkill.turns, " turni");
-                        }
-                    } 
-                }
-                console.log("Dopo: " + currentBattlers[i].name + " Target " + chooseTarget[0].name + " HP: " + chooseTarget[0].stats["health"] + " Target MP: " + chooseTarget[0].stats["mana"]);
-                //checkRuleCondition onActionEnd: da sistemare nel caso non trovi nulla
+                            if (!chooseTarget[0].status) 
+                            {
+                                chooseTarget[0].status = [];
+                            }
+                            
+                            statusAddedFromSkill = data.status.find(chosenStatus => chosenStatus.name === selectedSkill.effects[j].addStatus);
+                            
+                            let checkIfStatusExists = chooseTarget[0].status.find(findStatus => findStatus.name === selectedSkill.effects[j].addStatus);
+                            console.log("statusAddedFromSkill è: ", statusAddedFromSkill, " checkIfStatusExists: ", checkIfStatusExists);
+                            if(checkIfStatusExists === undefined)
+                            {
+                                statusInstance = structuredClone(statusAddedFromSkill);
+                                chooseTarget[0].status.push(statusInstance);
+                                console.log(chooseTarget[0].name, " ha ricevuto da una skill lo status: ", statusAddedFromSkill.name, "che dura: ", statusAddedFromSkill.turns, " turni");
+                            }
+                        } 
+                    }
+                    console.log("Dopo: " + currentBattlers[i].name + " Target " + chooseTarget[0].name + " HP: " + chooseTarget[0].stats["health"] + " Target MP: " + chooseTarget[0].stats["mana"]);
+                    //checkRuleCondition onActionEnd: da sistemare nel caso non trovi nulla
+                    checkRules = triggerActions(data, currentBattlers, "onActionEnd");
+                    console.log("chooseTarget: ", structuredClone(chooseTarget[0]) , "currentBattlers: ", structuredClone(currentBattlers));
                 }
                 else
                 {
@@ -102,30 +110,11 @@ export function runEngine(JSONData)
                 }
                 
                 
-
-                //checkRules = checkRuleCondition(data.rules.filter(rule => rule.trigger == "onActionEnd"), currentBattlers, data.status);
-                //checkStatus(data.battlers, currentBattlers, false);
-                
-                console.log("checkRules prima: ", structuredClone(checkRules));
-                checkRules = checkRuleCondition(data.rules.filter(rule => rule.trigger == "onActionEnd"), currentBattlers, data.status);
-                console.log("checkRules dopo: ", structuredClone(checkRules));
-
-                checkStatus(data.battlers, currentBattlers, false);
-
-                /*
-                if(winners !== null)
-                {
-                    getWinners = structuredClone(winners);
-                }
-                */
-                console.log("chooseTarget: ", structuredClone(chooseTarget[0]) , "currentBattlers: ", structuredClone(currentBattlers));
                 
                 }
 
                 //checkRuleCondition onTurnEnd
             }
         }
-        //return [winners, data.game.turns];
-        return checkRules;
-        
+             return checkRules;
     }

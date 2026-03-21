@@ -45,7 +45,19 @@
                     "declareWinnerGroup": "player",
                     "declareLoserGroup": "enemy"
                 }
+        },
+        {
+            "trigger": "onTurnStart",
+            "condition": {
+                "checkBattlerGroup": "player",
+                "haveStatus": "Power+"
+            },
+            "effects": 
+                {
+                    "removeStatus": "Regen"
+                }
         }
+
     ],
     "battlers": [
         {
@@ -103,9 +115,10 @@
             "name": "attack",
             "effects": [
                 {
-                    "value": 2,
+                    "value": 1,
                     "targetSkill": "default",
                     "targetStat": "health",
+                    "operator": "-",
                     "addStatus": "Power+"
                 }
             ]
@@ -114,10 +127,11 @@
             "name": "bigAttack",
             "effects": [
                 {
-                    "value": 3,
+                    "value": 2,
                     "targetSkill": "default",
                     "targetStat": "health",
-                    "addStatus": "Power+"
+                    "operator": "-",
+                    "addStatus": "Regen"
                 }
             ]
         }
@@ -126,6 +140,7 @@
     [
         {
             "name": "KO",
+            "trigger": "onActionEnd",
             "turns": -1,
             "priority": 100,
             "applyOnce": true,
@@ -137,6 +152,7 @@
         },
         {
             "name": "Stun",
+            "trigger": "onActionEnd",
             "turns": 3,
             "priority": 80,
             "applyOnce": true,
@@ -147,18 +163,20 @@
         },
         {
             "name": "Regen",
+            "trigger": "onTurnStart",
             "turns": 3,
             "priority": 50,
-            "applyOnce": false,
+            "applyOnce": true,
             "effects":
             {
                 "stat": "health",
                 "operator": "+",
-                "value": "5"
+                "value": 35
             }
         },
         {
             "name": "Power+",
+            "trigger": "onTurnStart",
             "turns": 3,
             "priority": 50,
             "applyOnce": true,
@@ -166,7 +184,7 @@
             {
                 "stat": "attack",
                 "operator": "+",
-                "value": "25"
+                "value": 25
             }
         }
     ]

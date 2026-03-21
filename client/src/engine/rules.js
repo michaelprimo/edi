@@ -1,15 +1,12 @@
-
-
-export function checkRuleCondition(mainRules, battlerData, statusData) {
-    
+export function checkRuleCondition(data, battlerData, ruleTrigger) {
     
     let ruleResults = [];
     let checkStatusResults = [];
     let setSimulationResults = [];
+    let mainRules = data.rules.filter(rule => rule.trigger === ruleTrigger);
 
     mainRules.forEach(rule => {
         
-
         // Tipo 1: condizione su stat
         if(rule.condition.stat) {
             const { stat, operator, value } = rule.condition;
@@ -48,13 +45,30 @@ export function checkRuleCondition(mainRules, battlerData, statusData) {
         //console.log(rule.effects.applyStatus);
         // Applica status se previsto
         if(rule.effects.applyStatus) {
-            ruleResults.forEach(battler => {
+            ruleResults.forEach(battler => 
+                {
                 const hasStatus = battler.status.some(s => s.name === rule.effects.applyStatus);
                 
-                if(!hasStatus) {
-                    const getStatus = statusData.find(s => s.name === rule.effects.applyStatus);
-                    battler.status.push(getStatus);
+                if(!hasStatus) 
+                {
+                    const getStatus = data.status.find(s => s.name === rule.effects.applyStatus);
+                    const clonedStatus = structuredClone(getStatus);
+                    battler.status.push(clonedStatus);
                     console.log(battler.name, " ha ricevuto da una regola lo status: ", getStatus.name);
+                }
+            });
+        }
+
+        if(rule.effects.removeStatus) {
+            ruleResults.forEach(battler => 
+                {
+                const hasStatus = battler.status.some(s => s.name === rule.effects.removeStatus);
+                console.log("verificare se ", battler.name, " ha lo stato da rimuovere:", hasStatus);
+                if(hasStatus) 
+                {
+                    const getStatus = data.status.find(s => s.name === rule.effects.removeStatus);
+                    battler.status = battler.status.filter(s => s.name !== rule.effects.removeStatus);
+                    console.log(battler.name, " ha perso a causa di una regola lo status: ", getStatus.name, " status in possesso: ", battler.status);
                 }
             });
         }
