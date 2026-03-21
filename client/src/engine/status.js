@@ -33,13 +33,13 @@ export function checkStatus(data, battler, statusTrigger)
                     if(status.effects.isTargetable !== undefined)
                     {
                         
-                        battler[i].isTargetable = status.effects.isTargetable;
+                        battler[i].stats.isTargetable = status.effects.isTargetable;
                         
                     }
                     if(status.effects.canHaveTurns !== undefined)
                     {
                         
-                        battler[i].canHaveTurns = status.effects.canHaveTurns;
+                        battler[i].stats.canHaveTurns = status.effects.canHaveTurns;
                         
                     }
 

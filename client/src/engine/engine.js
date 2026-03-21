@@ -25,7 +25,7 @@ let target = targetType === "default"
     ? currentBattlers[battlerIndex].targetType 
     : targetType;
 
-let targetBattlers = currentBattlers.filter(b => b.battlerType === target && b.isTargetable == true);
+let targetBattlers = currentBattlers.filter(b => b.battlerType === target && b.stats.isTargetable == true);
 
 
 return targetBattlers;
@@ -36,8 +36,8 @@ export function runEngine(JSONData)
         const data = structuredClone(JSONData); 
         
         data.battlers.forEach((battler, i) => {
-            battler.isTargetable ??= true;
-            battler.canHaveTurns ??= true;
+            battler.stats.isTargetable ??= true;
+            battler.stats.canHaveTurns ??= true;
             battler.baseStats ??= structuredClone(battler.stats);
             battler.id = i;
             battler.checkStatusParams = [];
@@ -64,7 +64,7 @@ export function runEngine(JSONData)
             //checkStatus(data, currentBattlers, "onTurnStart");
             for(let i = 0; i<currentBattlers.length; i++)
             {
-                if(currentBattlers[i].canHaveTurns === true)
+                if(currentBattlers[i].stats.canHaveTurns === true)
                 {
                     selectedSkill = getValuefromSkill(data.skills, currentBattlers, i, 0);
 
