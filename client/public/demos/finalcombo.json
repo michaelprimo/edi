@@ -56,6 +56,21 @@
                 {
                     "removeStatus": "Regen"
                 }
+        },
+        {
+            "trigger": "onActionEnd",
+            "condition": {
+                "checkBattlerGroup": "player",
+                "stat": "health",
+                "operator": ">",
+                "value": 10
+            },
+            "effects": 
+                {
+                    "setStat": "health",
+                    "operator": "=",
+                    "value": 10
+                }
         }
 
     ],
@@ -69,31 +84,7 @@
                 "mana": 10,
                 "attack": 100
             },
-            "skills": ["bigAttack","attack"],
-            "status": []
-        },
-        {
-            "name": "player2",
-            "battlerType": "player",
-            "targetType": "enemy",
-            "stats": {
-                "health": 10,
-                "mana": 10,
-                "attack": 100
-            },
-            "skills": ["bigAttack","attack"],
-            "status": []
-        },
-        {
-            "name": "enemy",
-            "battlerType": "enemy",
-            "targetType": "player",
-            "stats": {
-                "health": 10,
-                "mana": 10,
-                "attack": 100
-            },
-            "skills": ["attack","bigAttack"],
+            "skills": ["bigAttack","bigAttack"],
             "status": []
         },
         {
@@ -105,7 +96,7 @@
                 "mana": 10,
                 "attack": 100
             },
-            "skills": ["bigAttack","bigAttack"],
+            "skills": ["heal","bigAttack"],
             "status": []
         }
     ],
@@ -113,10 +104,11 @@
     [
         {
             "name": "attack",
+            
             "effects": [
                 {
-                    "value": 15,
-                    "targetSkill": "default",
+                    "value": 4,
+                    "targetSkill": "self",
                     "targetStat": "health",
                     "operator": "-",
                     "addStatus": "Power+"
@@ -125,12 +117,31 @@
         },
         {
             "name": "bigAttack",
+            "cost": [{
+                "health": 2,
+                "mana": 4
+            }],
             "effects": [
                 {
-                    "value": 25,
-                    "targetSkill": "default",
+                    "value": 17,
+                    "targetSkill": "enemy",
                     "targetStat": "health",
                     "operator": "-",
+                    "addStatus": "Regen"
+                }
+            ]
+        },
+        {
+            "name": "heal",
+            "cost": [{
+                "mana": 6
+            }],
+            "effects": [
+                {
+                    "value": 10,
+                    "targetSkill": "ally",
+                    "targetStat": "health",
+                    "operator": "+",
                     "addStatus": "Regen"
                 }
             ]
@@ -144,11 +155,18 @@
             "turns": -1,
             "priority": 100,
             "applyOnce": true,
+            "repelStatus": ["Stun", "Regen", "Power+"],
             "effects":
+            [{
+                "stat": "isTargetable",
+                "operator": "=",
+                "value": false
+            },
             {
-                "isTargetable": false,
-                "canHaveTurns": false
-            }
+                "stat": "canHaveTurns",
+                "operator": "=",
+                "value": false
+            }]
         },
         {
             "name": "Stun",
@@ -157,22 +175,24 @@
             "priority": 80,
             "applyOnce": true,
             "effects":
-            {
-                "canHaveTurns": false
-            }
+            [{
+                "stat": "canHaveTurns",
+                "operator": "=",
+                "value": false
+            }]
         },
         {
             "name": "Regen",
             "trigger": "onTurnStart",
             "turns": 3,
             "priority": 50,
-            "applyOnce": true,
+            "applyOnce": false,
             "effects":
-            {
+            [{
                 "stat": "health",
                 "operator": "+",
-                "value": 35
-            }
+                "value": 1
+            }]
         },
         {
             "name": "Power+",
@@ -180,12 +200,12 @@
             "turns": 3,
             "priority": 50,
             "applyOnce": true,
-            "effects":
+            "effects": [
             {
                 "stat": "attack",
                 "operator": "+",
                 "value": 25
-            }
+            }]
         }
     ]
 }
