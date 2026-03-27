@@ -6,18 +6,13 @@ import { applySkillDamageFormula } from './damage.js';
 import { triggerActions } from './trigger.js';
 import { getTargetForSkill } from './target.js';
 import { getValuefromSkill } from './skills.js';
+import { setupGame } from './setup.js';
 
 export function runEngine(JSONData)
     {
-        const data = structuredClone(JSONData); 
-        
-        data.battlers.forEach((battler, i) => {
-            battler.stats.isTargetable ??= true;
-            battler.stats.canHaveTurns ??= true;
-            battler.baseStats ??= structuredClone(battler.stats);
-            battler.id = i;
-            battler.checkStatusParams = [];
-        });
+        const data = structuredClone(JSONData);
+
+        setupGame(data);
 
         let currentBattlers = structuredClone(data.battlers);
         let selectedSkill;
@@ -25,7 +20,7 @@ export function runEngine(JSONData)
         let getWinners;
         let statusAddedFromSkill;
         let statusInstance;
-        console.log("Edi v0.08: simulazione di debug");
+        console.log("Edi v0.09: simulazione di debug");
         while(checkRules === null && data.game.turns <= 10)
         {
 
@@ -42,7 +37,9 @@ export function runEngine(JSONData)
             {
                 if(currentBattlers[i].stats.canHaveTurns === true)
                 {
-                    selectedSkill = getValuefromSkill(data.skills, currentBattlers, i, 0);
+                    selectedSkill = getValuefromSkill(data.skills, currentBattlers, i);
+
+                    console.log("selectedSkill: ", selectedSkill);
 
                     let chooseTarget = getTargetForSkill(currentBattlers, i, selectedSkill.effects[0].targetSkill);
                     console.log("-------------------- target di ", currentBattlers[i].name, ": ", structuredClone(chooseTarget));

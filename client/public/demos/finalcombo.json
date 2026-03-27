@@ -84,7 +84,7 @@
                 "mana": 10,
                 "attack": 100
             },
-            "skills": ["bigAttack","bigAttack"],
+            "skills": ["bigAttack","attack"],
             "status": []
         },
         {
@@ -104,11 +104,10 @@
     [
         {
             "name": "attack",
-            
             "effects": [
                 {
                     "value": 4,
-                    "targetSkill": "self",
+                    "targetSkill": "enemy",
                     "targetStat": "health",
                     "operator": "-",
                     "addStatus": "Power+"
@@ -123,7 +122,7 @@
             }],
             "effects": [
                 {
-                    "value": 17,
+                    "value": 7,
                     "targetSkill": "enemy",
                     "targetStat": "health",
                     "operator": "-",
