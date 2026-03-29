@@ -1,6 +1,5 @@
-export function gameLog(textLog)
+export function addTextLog(gameLogs, textLogs)
 {
-    let fullLogs;
-
-    fullLogs.push(textLog);
+    gameLogs.textLogs.push(textLogs);
+    return gameLogs;
 }

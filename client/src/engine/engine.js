@@ -7,8 +7,9 @@ import { triggerActions } from './trigger.js';
 import { getTargetForSkill } from './target.js';
 import { getValuefromSkill } from './skills.js';
 import { setupGame } from './setup.js';
+import { addTextLog } from './log.js';
 
-export function runEngine(JSONData)
+export function runEngine(JSONData, gameLogs)
     {
         const data = structuredClone(JSONData);
 
@@ -25,7 +26,8 @@ export function runEngine(JSONData)
         {
 
             data.game.turns++;
-            console.log("TURNO ", data.game.turns);
+            gameLogs = addTextLog(gameLogs, `TURNO ${data.game.turns}`);
+            
             currentBattlers = shuffleObjects(currentBattlers);
             //console.log("currentBattlers: ", structuredClone(currentBattlers));
             //checkRuleCondition onTurnStart
@@ -35,14 +37,14 @@ export function runEngine(JSONData)
             //checkStatus(data, currentBattlers, "onTurnStart");
             for(let i = 0; i<currentBattlers.length; i++)
             {
+                gameLogs = addTextLog(gameLogs, `Ora è il turno di ${currentBattlers[i].name}! Stats: ${JSON.stringify(currentBattlers[i].stats)}`);
                 if(currentBattlers[i].stats.canHaveTurns === true)
                 {
                     selectedSkill = getValuefromSkill(currentBattlers[i]);
 
-                    console.log("selectedSkill: ", selectedSkill);
-
                     if(selectedSkill)
                     {
+                        gameLogs = addTextLog(gameLogs, `${currentBattlers[i].name} usa ${selectedSkill.name}!`);
                         let chooseTarget = getTargetForSkill(currentBattlers, i, selectedSkill.effects[0].targetSkill);
         
                         for(let j = 0; j<chooseTarget.length; j++)
@@ -61,7 +63,7 @@ export function runEngine(JSONData)
 
                                     let damageValueFromSkillFormula = getDamageValueFromFormula(selectedSkill.effects[k].value, currentBattlers[i], chooseTarget[j]);
                                     chooseTarget[j].stats[selectedSkill.effects[k].targetStat] = applySkillDamageFormula(chooseTarget[j].stats[selectedSkill.effects[k].targetStat], damageValueFromSkillFormula, selectedSkill.effects[k].operator);
-                                    
+                                    gameLogs = addTextLog(gameLogs, `${chooseTarget[j].name} ha subito ${damageValueFromSkillFormula} danni!`);
 
 
                                     if(selectedSkill.effects[k].addStatus)
@@ -89,15 +91,10 @@ export function runEngine(JSONData)
                             }
                         }
                     }
-                    
-                
-                
-                
-                
                 }
                 else
                 {
-                    console.log("NO TARGETS");
+                    gameLogs = addTextLog(gameLogs, `${currentBattlers[i].name} non può usare skills a causa della mancanza di risorse o target!`);
                 }
             }
             //console.log("TRIGGERED");

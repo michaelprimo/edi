@@ -14,13 +14,13 @@ const Home = () => {
             .then((res) => {
                 setDemoData(res.data || []);
 
-                // --- PUNTO CRUCIALE ---
-                setLoading(false); // Diciamo a React che i dati sono arrivati!
+                
+                setLoading(false);
             })
             .catch((err) => {
                 console.error(err);
                 setError("Errore nel caricamento");
-                setLoading(false); // Anche in caso di errore smettiamo di caricare
+                setLoading(false); 
             });
     }, []);
 
@@ -31,24 +31,9 @@ const Home = () => {
         <div>
             <h2>Demo: {demoData.game.name}</h2>
             <p>Turni trascorsi: {demoData.game.turns}</p>
-
-            <h3>Combattenti:</h3>
-            <ul>
-                {demoData.battlers.map((b, index) => (
-                    <li key={index}>
-                        <strong>{b.name}</strong> - Salute: {b.stats.health}
-                    </li>
-                ))}
-                {demoData.rules.map((r, index) => (
-                    <li key={index}>
-                        <strong>{r.condition.stat}</strong> - Salute: {r.condition.operator}
-
-                    </li>
-                ))}
-
-                <strong>{JSON.stringify(demoData)}</strong>
+            
                 <Engine JSONData={demoData} />
-            </ul>
+            
         </div>
     );
 };
