@@ -1,15 +1,21 @@
-function getusableSkills(dataSkill, currentBattlers, battlerIndex)
+//da sistemare perchè non funziona
+function getUsableSkills(battler)
 {
-    let availableSkills = currentBattlers[battlerIndex].skills.filter(skillName => {
-        
-        let skill = dataSkill.find(s => s.name === skillName);
-        if(!skill || !skill.cost) return true;
-        
+    console.warn("sistemare le formule dei danni che rendono gli HP uguali al risultato della formula senza contare l'operatore");
+
+    let availableSkills = battler.skills;
+
+    console.log("availableSkills:", availableSkills);
+    console.log("availableSkillCost:", availableSkills[0].cost);
+    console.log("availableStats:", battler.stats);
+
+    availableSkills = availableSkills.filter(skill => 
+    {
+    if(!skill.cost) return true;
         return skill.cost.every(cost =>
-            Object.keys(cost).every(stat => currentBattlers[battlerIndex].stats[stat] >= cost[stat])
+            Object.keys(cost).every(stat => battler.stats[stat] >= cost[stat])
         );
     });
-
     return availableSkills;
 }
 
@@ -18,18 +24,17 @@ function chooseSkill(availableSkills)
     return Math.floor(Math.random() * availableSkills.length);
 }
 
-export function getValuefromSkill(dataSkill, currentBattlers, battlerIndex) 
+export function getValuefromSkill(battler) 
     {
-        let availableSkills = getusableSkills(dataSkill, currentBattlers, battlerIndex);
-        let skillSelected = currentBattlers[battlerIndex].skills[chooseSkill(availableSkills)];
-        //let skillFound = dataSkill.find(s => s.name === skillSelected);
+        let availableSkills = getUsableSkills(battler);
+        let skillSelected = availableSkills[chooseSkill(availableSkills)];
 
         if (skillSelected && skillSelected.effects && skillSelected.effects.length > 0) {
             if(skillSelected.cost !== undefined)
             {
                 skillSelected.cost.forEach(cost => {
                     Object.keys(cost).forEach(stat => {
-                        currentBattlers[battlerIndex].stats[stat] -= cost[stat];
+                        battler.stats[stat] -= cost[stat];
                     });
                 });
             }
@@ -38,5 +43,5 @@ export function getValuefromSkill(dataSkill, currentBattlers, battlerIndex)
 }
 
         console.warn("Skill non trovata o senza effetti!");
-        return 0; 
+        return undefined; 
     }

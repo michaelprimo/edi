@@ -4,7 +4,7 @@ export function checkStatus(data, battler, statusTrigger)
 
    
 
-    console.log("data.battlers:", structuredClone(data.battlers), " battler: ", structuredClone(battler), " statusTrigger: ", structuredClone(statusTrigger));
+    //console.log("data.battlers:", structuredClone(data.battlers), " battler: ", structuredClone(battler), " statusTrigger: ", structuredClone(statusTrigger));
     for(let i=0; i<battler.length;i++)
     {
         
@@ -42,19 +42,19 @@ export function checkStatus(data, battler, statusTrigger)
                                 case "+":
                                 {
                                     battler[i].stats[status.effects[j].stat] += status.effects[j].value;
-                                    console.log("La forza di ", battler[i].name, " è ora: ", battler[i].stats[status.effects[j].stat])
+                                    //console.log("La forza di ", battler[i].name, " è ora: ", battler[i].stats[status.effects[j].stat])
                                     break;
                                 }
                                 case "-":
                                 {
                                     battler[i].stats[status.effects[j].stat] -= status.effects[j].value;
-                                    console.log("La forza di ", battler[i].name, " è ora: ", battler[i].stats[status.effects[j].stat])
+                                    //console.log("La forza di ", battler[i].name, " è ora: ", battler[i].stats[status.effects[j].stat])
                                     break;
                                 }
                                 case "=":
                                 {
                                     battler[i].stats[status.effects[j].stat] = status.effects[j].value;
-                                    console.log("La forza di ", battler[i].name, " è ora: ", battler[i].stats[status.effects[j].stat])
+                                    //console.log("La forza di ", battler[i].name, " è ora: ", battler[i].stats[status.effects[j].stat])
                                     break;
                                 }
                             }  
@@ -63,9 +63,9 @@ export function checkStatus(data, battler, statusTrigger)
 
                     if(status.repelStatus !== undefined)
                     {
-                        console.log("Status di ", battler[i].name, " prima: ", battler[i].status);
+                        //console.log("Status di ", battler[i].name, " prima: ", battler[i].status);
                         battler[i].status = battler[i].status.filter(s => !status.repelStatus.includes(s.name));
-                        console.log("Status di ", battler[i].name, " ripuliti: ", battler[i].status);
+                        //console.log("Status di ", battler[i].name, " ripuliti: ", battler[i].status);
                     }
                     
                     if(status.turns > 0 && statusTrigger == "onTurnEnd")
@@ -77,9 +77,9 @@ export function checkStatus(data, battler, statusTrigger)
                             
                             battler[i].checkStatusParams.push(status.effects[j].stat);
                         }
-                        console.log("Turni dello stato prima ", status.name, " di ", battler[i].name, ": ", status.turns, "statusTrigger:", statusTrigger);
+                        //console.log("Turni dello stato prima ", status.name, " di ", battler[i].name, ": ", status.turns, "statusTrigger:", statusTrigger);
                         status.turns--;
-                        console.log("Turni dello stato dopo", status.name, " di ", battler[i].name, ": ", status.turns, "statusTrigger:", statusTrigger);
+                        //console.log("Turni dello stato dopo", status.name, " di ", battler[i].name, ": ", status.turns, "statusTrigger:", statusTrigger);
                     }
                 }
             });

@@ -45,19 +45,19 @@ export function getTargetForSkill(currentBattlers, battlerIndex, targetType) {
             targetBattlers = sortedBattlers.filter(b => 
                 b.battlerType === current.battlerType && b.stats.isTargetable === true
             );
-            console.log("allies:", targetBattlers);
+            //console.log("allies:", targetBattlers);
             break;
 
         case "ally":
             targetBattlers = [sortedBattlers.find(b => 
                 b.battlerType === current.battlerType && b.stats.isTargetable === true
             )];
-            console.log("allies:", targetBattlers);
+            //console.log("allies:", targetBattlers);
             break;
 
         case "self":
             targetBattlers = [current];
-            console.log("self:", targetBattlers);
+            //console.log("self:", targetBattlers);
             break;
     }
 

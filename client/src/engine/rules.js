@@ -63,7 +63,7 @@ export function checkRuleCondition(data, battlerData, ruleTrigger) {
             ruleResults.forEach(battler => 
                 {
                 const hasStatus = battler.status.some(s => s.name === rule.effects.removeStatus);
-                console.log("verificare se ", battler.name, " ha lo stato da rimuovere:", hasStatus);
+                //console.log("verificare se ", battler.name, " ha lo stato da rimuovere:", hasStatus);
                 if(hasStatus) 
                 {
                     const getStatus = data.status.find(s => s.name === rule.effects.removeStatus);
@@ -71,6 +71,25 @@ export function checkRuleCondition(data, battlerData, ruleTrigger) {
                     console.log(battler.name, " ha perso a causa di una regola lo status: ", getStatus.name, " status in possesso: ", battler.status);
                 }
             });
+        }
+
+        if(rule.effects.setStat)
+        {
+            let battlerStatData = battlerData.filter(b => b.battlerType === rule.condition.checkBattlerGroup);
+            const { setStat, operator, value } = rule.effects;
+            
+            battlerStatData.forEach(battler => {
+                switch(operator) 
+                {
+                    case "=":  battler.stats[setStat] = value; break;
+                    case "+":  battler.stats[setStat] += value; break;
+                    case "-":  battler.stats[setStat] -= value; break;
+                    case "*": battler.stats[setStat] *= value; break;
+                    case "/": battler.stats[setStat] /= value; break;
+                    default: battler.stats[setStat] = value;
+                }
+            });
+            
         }
     });
     
