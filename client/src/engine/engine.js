@@ -5,78 +5,93 @@ import { checkStatus } from './status.js';
 import { getDamageValueFromFormula, applySkillDamageFormula } from './damage.js';
 import { triggerActions } from './trigger.js';
 import { getTargetForSkill } from './target.js';
-import { getValuefromSkill } from './skills.js';
+import { getSkilltoUse } from './skills.js';
 import { setupGame } from './setup.js';
-import { addTextLog } from './log.js';
+import { Logger } from './log.js';
 
-export function runEngine(JSONData, gameLogs)
+export function runEngine(JSONData)
     {
         const data = structuredClone(JSONData);
-
+        const logger = new Logger();
         setupGame(data);
 
-        let currentBattlers = structuredClone(data.battlers);
+        let currentBattlers = putBattlersInBattle(structuredClone(data.battlers));
+        currentBattlers = putAgentsinBattlers(data, currentBattlers);
         let selectedSkill;
-        let checkRules = null;
+        let checkRules = undefined;
         let getWinners;
         let statusAddedFromSkill;
         let statusInstance;
-        console.log("Edi v0.09: simulazione di debug");
-        while(checkRules === null && data.game.turns <= 10)
+        
+        while((checkRules === undefined || checkRules === null) && data.game.turns <= 10)
         {
 
             data.game.turns++;
-            gameLogs = addTextLog(gameLogs, "showTurns", 
-            {
-                "numberOfTurnsPassed": data.game.turns
-            });
+            logger.log("showTurns", { numberOfTurnsPassed: data.game.turns });
             
             currentBattlers = shuffleObjects(currentBattlers);
-            //console.log("currentBattlers: ", structuredClone(currentBattlers));
-            //checkRuleCondition onTurnStart
-            //sistemare il fatto che all'inizio del turno del battler ci deve essere questo boost
-            
+           
             checkRules = triggerActions(data, currentBattlers, "onTurnStart");
-            //checkStatus(data, currentBattlers, "onTurnStart");
+            
             for(let i = 0; i<currentBattlers.length; i++)
             {
-                gameLogs = addTextLog(gameLogs, "battlerTurnStart", 
-                    {
+                logger.log("battlerTurnStart", {
                         "battlerName": currentBattlers[i].name, 
                         "battlerStats": JSON.stringify(currentBattlers[i].stats) 
                     });
+        
                 if(currentBattlers[i].stats.canHaveTurns === true)
                 {
-                    selectedSkill = getValuefromSkill(currentBattlers[i]);
+                    selectedSkill = getSkilltoUse(currentBattlers[i], currentBattlers);
 
                     if(selectedSkill)
                     {
-                        gameLogs = addTextLog(gameLogs, "skillUse", 
+                        logger.log("skillUse", 
                         {
                             "battlerName": currentBattlers[i].name,
                             "battlerSkillName": selectedSkill.name
                         });
-                        let chooseTarget = getTargetForSkill(currentBattlers, i, selectedSkill.effects[0].targetSkill);
+
+                        let getAllSkillEffects = [];
+
+                        selectedSkill.effects.forEach(effect => {
+
+                            getAllSkillEffects.push(effect.targetSkill);
+                        })
+
+                        console.log(getAllSkillEffects);
+
+                        let chooseTarget = getTargetForSkill(currentBattlers, i, getAllSkillEffects, selectedSkill.targetOnlyWithStatus);
         
                         for(let j = 0; j<chooseTarget.length; j++)
                         {
                             if(chooseTarget[j] !== undefined)
                             {
-                                console.log("Prima: " + currentBattlers[i].name + " Target " + chooseTarget[j].name + " HP: " + chooseTarget[j].stats["health"] + " Target MP: " + chooseTarget[j].stats["mana"]);
-                        
-                                //checkRuleCondition onActionStart
 
                                 for(let k = 0; k<selectedSkill.effects.length; k++)
                                 {
-                                    console.log("formula: ", selectedSkill.effects[k].value);
-                                    console.log("attacker: ", currentBattlers[i]);
-                                    console.log("defense: ", chooseTarget[j]);
 
                                     let damageValueFromSkillFormula = getDamageValueFromFormula(selectedSkill.effects[k].value, currentBattlers[i], chooseTarget[j]);
                                     chooseTarget[j].stats[selectedSkill.effects[k].targetStat] = applySkillDamageFormula(chooseTarget[j].stats[selectedSkill.effects[k].targetStat], damageValueFromSkillFormula, selectedSkill.effects[k].operator);
-                                    gameLogs = addTextLog(gameLogs, "damageDealtWithSkill", {"targetName": chooseTarget[j].name, "damageAmount": damageValueFromSkillFormula});
-
-
+                                    
+                                    switch(selectedSkill.effects[k].operator)
+                                    {
+                                        case "+":
+                                            logger.log("damageHealedWithSkill", 
+                                            {
+                                                "targetName": chooseTarget[j].name, "damageAmount": damageValueFromSkillFormula
+                                            });
+                                            break;
+                                        case "-":
+                                            logger.log("damageDealtWithSkill", 
+                                            {
+                                                "targetName": chooseTarget[j].name, "damageAmount": damageValueFromSkillFormula
+                                            });
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    
                                     if(selectedSkill.effects[k].addStatus)
                                     {
                                         if (!chooseTarget[j].status) 
@@ -87,30 +102,67 @@ export function runEngine(JSONData, gameLogs)
                                         statusAddedFromSkill = data.status.find(chosenStatus => chosenStatus.name === selectedSkill.effects[k].addStatus);
                                         
                                         let checkIfStatusExists = chooseTarget[j].status.find(findStatus => findStatus.name === selectedSkill.effects[k].addStatus);
-                                        console.log("statusAddedFromSkill è: ", statusAddedFromSkill, " checkIfStatusExists: ", checkIfStatusExists);
                                         if(checkIfStatusExists === undefined)
                                         {
                                             statusInstance = structuredClone(statusAddedFromSkill);
                                             chooseTarget[j].status.push(statusInstance);
-                                            console.log(chooseTarget[j].name, " ha ricevuto da una skill lo status: ", statusAddedFromSkill.name, "che dura: ", statusAddedFromSkill.turns, " turni");
                                         }
                                     } 
                                 }
-                                console.log("Dopo: " + currentBattlers[i].name + " Target " + chooseTarget[j].name + " HP: " + chooseTarget[j].stats["health"] + " Target MP: " + chooseTarget[j].stats["mana"]);
-                                checkRules = triggerActions(data, currentBattlers, "onActionEnd");
-                                console.log("chooseTarget: ", structuredClone(chooseTarget[j]) , "currentBattlers: ", structuredClone(currentBattlers));
+                                
+                            }
+                        }
+                        checkRules = triggerActions(data, currentBattlers, "onActionEnd");
+                        if(checkRules !== null)
+                        {
+                            const winnersEntry = checkRules.find(r => r.winners !== undefined);
+                            const losersEntry = checkRules.find(r => r.losers !== undefined);
+                            
+                            if(winnersEntry)
+                            {
+                                logger.log("declareWinners", { "winners": winnersEntry.winners[0].battlerType });
+                            }
+                            if(losersEntry)
+                            {
+                                logger.log("declareLosers", { "losers": losersEntry.losers[0].battlerType });
                             }
                         }
                     }
                 }
                 else
                 {
-                    gameLogs = addTextLog(gameLogs, "noResources", {"battlerName": currentBattlers[i].name});
+                    logger.log("noResources", {"battlerName": currentBattlers[i].name});
                 }
             }
-            //console.log("TRIGGERED");
                 triggerActions(data, currentBattlers, "onTurnEnd");
-                //checkRuleCondition onTurnEnd
         }
-             return checkRules;
+             return { checkRules, logs: logger.getLogs() };
     }
+
+function putBattlersInBattle(currentBattlers)
+{
+    let battlersInBattle = [];
+
+    currentBattlers.forEach(battler => 
+    {
+        if(battler.inBattle === true)
+        {
+            battlersInBattle.push(battler);
+        }
+    });
+    return battlersInBattle;
+}
+
+function putAgentsinBattlers(data, currentBattlers)
+{
+    data.agent.forEach(agent => {
+        currentBattlers.forEach(battler => {
+            if(battler.name === agent.assignTo)
+            {
+                battler.agent = agent.behaviour;
+            }
+        });
+    });
+    
+    return currentBattlers;
+}

@@ -79,8 +79,24 @@
             "name": "player",
             "battlerType": "player",
             "targetType": "enemy",
+            "inBattle": true,
             "stats": {
-                "health": 30,
+                "health": 10,
+                "maxHealth": 10,
+                "mana": 10,
+                "attack": 2
+            },
+            "skills": ["heal","attack", "bigAttack"],
+            "status": []
+        },
+        {
+            "name": "player2",
+            "battlerType": "player",
+            "targetType": "enemy",
+            "inBattle": false,
+            "stats": {
+                "health": 10,
+                "maxHealth": 10,
                 "mana": 10,
                 "attack": 2
             },
@@ -88,11 +104,27 @@
             "status": []
         },
         {
+            "name": "enemy",
+            "inBattle": false,
+            "battlerType": "enemy",
+            "targetType": "player",
+            "stats": {
+                "health": 4,
+                "maxHealth": 10,
+                "mana": 10,
+                "attack": 2
+            },
+            "skills": ["heal","bigAttack"],
+            "status": []
+        },
+        {
             "name": "enemy2",
+            "inBattle": true,
             "battlerType": "enemy",
             "targetType": "player",
             "stats": {
                 "health": 10,
+                "maxHealth": 10,
                 "mana": 10,
                 "attack": 2
             },
@@ -116,8 +148,8 @@
         {
             "name": "bigAttack",
             "cost": [{
-                "health": 2,
-                "mana": 4
+                "health": { "value": 2, "allowLethal": false },
+                "mana": { "value": 4, "allowLethal": true }
             }],
             "effects": [
                 {
@@ -141,6 +173,22 @@
                     "targetStat": "health",
                     "operator": "+",
                     "addStatus": "Regen"
+                }
+            ]
+        },
+        {
+            "name": "resurrect",
+            "targetOnlyWithStatus": ["KO"],
+            "cost": [{
+                "mana": 1
+            }],
+            "effects": [
+                {
+                    "value": "a_attack * 4",
+                    "targetSkill": "ally",
+                    "targetStat": "health",
+                    "operator": "+",
+                    "removeStatus": "KO"
                 }
             ]
         }
@@ -207,8 +255,10 @@
         }
     ],
     "agent": [
-        { "priority": 100, "chance": 100, "target": "self", "condition": { "stat": "health", "operator": "<", "value": 50 }, "action": "Heal" },
-        { "priority": 80, "chance": 50, "target": "enemy", "condition": { "stat": "health", "operator": "<", "value": 10 }, "action": "bigAttack" },
-        { "priority": 0, "chance": 100, "target": "enemy", "action": "Attack" }
-    ]
+    { "agentName": "aggressiveAgent", "assignTo": "player", "behaviour": [
+        { "priority": 100, "chance": 100, "conditions": [{ "target": "self", "stat": "health", "operator": "<", "value": 5 }], "action": "Heal" },
+        { "priority": 80, "chance": 50, "conditions": [{ "target": "self", "stat": "health", "operator": ">", "value": 2 }], "action": "bigAttack" },
+        { "priority": 0, "chance": 100, "conditions": [], "action": "Attack" }
+    ]}
+]
 }

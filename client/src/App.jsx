@@ -1,9 +1,5 @@
-/*import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'*/
+//the main component calling all the others
 
-import Counter from "./components/Counter"
 import Home from "./components/Home"
 
 function App() {

@@ -1,12 +1,12 @@
 export function checkRuleCondition(data, battlerData, ruleTrigger) {
     
-    let ruleResults = [];
+    
     let checkStatusResults = [];
     let setSimulationResults = [];
     let mainRules = data.rules.filter(rule => rule.trigger === ruleTrigger);
 
     mainRules.forEach(rule => {
-        
+        let ruleResults = [];
         // Tipo 1: condizione su stat
         if(rule.condition.stat) {
             const { stat, operator, value } = rule.condition;
@@ -28,22 +28,24 @@ export function checkRuleCondition(data, battlerData, ruleTrigger) {
             
             
             checkStatusResults = ruleResults.filter(s => s.battlerType === rule.condition.checkBattlerGroup);
-            if (JSON.stringify(checkStatusResults) === JSON.stringify(battlerData.filter(s => s.battlerType == rule.condition.checkBattlerGroup)))   
+            const groupBattlers = battlerData.filter(s => s.battlerType === rule.condition.checkBattlerGroup);
+
+            if(checkStatusResults.length === groupBattlers.length && checkStatusResults.every(b => groupBattlers.some(g => g.id === b.id)))
             {
                 if(rule.effects.declareWinnerGroup)
                 {
                     setSimulationResults.push({"winners": battlerData.filter(s => s.battlerType === rule.effects.declareWinnerGroup)});
+                    console.log("setSimulation winner:", setSimulationResults);
                 }
                 if(rule.effects.declareLoserGroup)
                 {
                     setSimulationResults.push({"losers": battlerData.filter(s => s.battlerType === rule.effects.declareLoserGroup)});
+                    console.log("setSimulation loser:", setSimulationResults);
                 }
-                
             }
-            //console.log("Simulation Results: ", setSimulationResults);
+            
         }
-        //console.log(rule.effects.applyStatus);
-        // Applica status se previsto
+        
         if(rule.effects.applyStatus) {
             ruleResults.forEach(battler => 
                 {
@@ -54,7 +56,7 @@ export function checkRuleCondition(data, battlerData, ruleTrigger) {
                     const getStatus = data.status.find(s => s.name === rule.effects.applyStatus);
                     const clonedStatus = structuredClone(getStatus);
                     battler.status.push(clonedStatus);
-                    console.log(battler.name, " ha ricevuto da una regola lo status: ", getStatus.name);
+                    
                 }
             });
         }
@@ -63,12 +65,11 @@ export function checkRuleCondition(data, battlerData, ruleTrigger) {
             ruleResults.forEach(battler => 
                 {
                 const hasStatus = battler.status.some(s => s.name === rule.effects.removeStatus);
-                //console.log("verificare se ", battler.name, " ha lo stato da rimuovere:", hasStatus);
+                
                 if(hasStatus) 
                 {
                     const getStatus = data.status.find(s => s.name === rule.effects.removeStatus);
                     battler.status = battler.status.filter(s => s.name !== rule.effects.removeStatus);
-                    console.log(battler.name, " ha perso a causa di una regola lo status: ", getStatus.name, " status in possesso: ", battler.status);
                 }
             });
         }

@@ -8,41 +8,21 @@ export default function Engine({ JSONData })
     const [logs, setLogs] = useState([]);
 
     useEffect(() => {
-
-    let executeTurn;
-    //let checkValidation = validateData(JSONData);
-    let gameLogs = 
-    {
-        "textLogs": [],
-        "winners": []
-    };
-    
     let checkValidation = true;
     if(checkValidation === true)
     {
-        for(let i = 0; i<1; i++)
+        for(let i = 0; i < 1; i++)
         {
-            //fare che una variabile prende i turni trascorsi e l'altra i risultati della partita
-            gameLogs.textLogs.push(`Simulazione ${i+1}`);
-            executeTurn = runEngine(JSONData, gameLogs);
-            //console.log(executeTurn);
-            if(executeTurn !== null)
+            let result = runEngine(JSONData);
+            let allLogs = [`Simulation ${i+1}`, ...result.logs];
+            setLogs(prev => [...prev, ...allLogs]);
+            
+            if(result.checkRules !== null)
             {
-                console.log("il gruppo ", executeTurn[0].winners[0].battlerType , " vince");
+                console.log("il gruppo ", result.checkRules[0].winners[0].battlerType, " vince");
             }
-            else
-            {
-                console.log("lol");
-            }
-            //console.log(`Il gruppo ${executeTurn.winners[0]} ha vinto`);
         }
-        setLogs(gameLogs.textLogs);
     }
-    else
-    {
-        console.warn(checkValidation);
-    }
-    
 }, []);
 
     return (
