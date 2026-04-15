@@ -35,12 +35,10 @@ export function checkRuleCondition(data, battlerData, ruleTrigger) {
                 if(rule.effects.declareWinnerGroup)
                 {
                     setSimulationResults.push({"winners": battlerData.filter(s => s.battlerType === rule.effects.declareWinnerGroup)});
-                    console.log("setSimulation winner:", setSimulationResults);
                 }
                 if(rule.effects.declareLoserGroup)
                 {
                     setSimulationResults.push({"losers": battlerData.filter(s => s.battlerType === rule.effects.declareLoserGroup)});
-                    console.log("setSimulation loser:", setSimulationResults);
                 }
             }
             
@@ -77,20 +75,25 @@ export function checkRuleCondition(data, battlerData, ruleTrigger) {
         if(rule.effects.setStat)
         {
             let battlerStatData = battlerData.filter(b => b.battlerType === rule.condition.checkBattlerGroup);
-            const { setStat, operator, value } = rule.effects;
-            
-            battlerStatData.forEach(battler => {
-                switch(operator) 
+            const effects = rule.effects;
+            const condition = rule.condition;
+            let isRuleConditionRespected = checkifRuleConditionIsRespected(battlerStatData, condition);
+
+            if(isRuleConditionRespected === true)
+            {
+                battlerStatData.forEach(battler => 
                 {
-                    case "=":  battler.stats[setStat] = value; break;
-                    case "+":  battler.stats[setStat] += value; break;
-                    case "-":  battler.stats[setStat] -= value; break;
-                    case "*": battler.stats[setStat] *= value; break;
-                    case "/": battler.stats[setStat] /= value; break;
-                    default: battler.stats[setStat] = value;
+                switch(effects.operator) 
+                {
+                    case "=":  battler.stats[effects.setStat] = effects.value; break;
+                    case "+":  battler.stats[effects.setStat] += effects.value; break;
+                    case "-":  battler.stats[effects.setStat] -= effects.value; break;
+                    case "*": battler.stats[effects.setStat] *= effects.value; break;
+                    case "/": battler.stats[effects.setStat] /= effects.value; break;
+                    default: battler.stats[effects.setStat] = effects.value;
                 }
-            });
-            
+                });
+            }
         }
     });
     
@@ -102,4 +105,27 @@ export function checkRuleCondition(data, battlerData, ruleTrigger) {
     {
         return null;
     }
+}
+
+function checkifRuleConditionIsRespected(battlerStatData, condition)
+{
+    return battlerStatData.some(battler => {
+        const statValue = battler.stats[condition.stat];
+
+        switch(condition.operator)
+        {
+            case ">":
+                return statValue > condition.value;
+            case "<":
+                return statValue < condition.value;
+            case ">=":
+                return statValue >= condition.value;
+            case "<=":
+                return statValue <= condition.value;
+            case "=":
+                return statValue === condition.value;
+            default:
+                return false;
+        }
+    });
 }

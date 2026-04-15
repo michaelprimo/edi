@@ -11,8 +11,11 @@ import { Logger } from './log.js';
 
 export function runEngine(JSONData)
     {
+        //create an isolated clone of the JSON data so we can duplicate and manipulate it at will without problems
         const data = structuredClone(JSONData);
+        //we start setting up the log manager that makes us see the content on what's happening on screen
         const logger = new Logger();
+        //here we add some special fields on the data and making checks of it
         setupGame(data);
 
         let currentBattlers = putBattlersInBattle(structuredClone(data.battlers));
@@ -23,6 +26,7 @@ export function runEngine(JSONData)
         let statusAddedFromSkill;
         let statusInstance;
         
+        console.warn("trovare un altro modo per finire la simulazione che non sia 'data.game.turns <= 10' per forza");
         while((checkRules === undefined || checkRules === null) && data.game.turns <= 10)
         {
 
@@ -42,7 +46,9 @@ export function runEngine(JSONData)
         
                 if(currentBattlers[i].stats.canHaveTurns === true)
                 {
+                    console.log("prima fase: selezionare skill da engine.js a getSkilltoUse in skills.js");
                     selectedSkill = getSkilltoUse(currentBattlers[i], currentBattlers);
+                    console.log("selectedSkill alla fine è: ", selectedSkill);
 
                     if(selectedSkill)
                     {
@@ -58,8 +64,6 @@ export function runEngine(JSONData)
 
                             getAllSkillEffects.push(effect.targetSkill);
                         })
-
-                        console.log(getAllSkillEffects);
 
                         let chooseTarget = getTargetForSkill(currentBattlers, i, getAllSkillEffects, selectedSkill.targetOnlyWithStatus);
         

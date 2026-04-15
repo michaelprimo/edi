@@ -1,88 +1,63 @@
-//da sistemare perchè non funziona
+import { chooseSkill } from './agent.js';
+
 function getUsableSkills(battler)
 {
-    let availableSkills = battler.skills;
+    let battlerSkills = battler.skills;
+    let availableSkills = [];
+    let getSkillCostResourceNames;
+    let checkIfSkillCostIsAffordable;
 
-    availableSkills = availableSkills.filter(skill => 
+    for(let i = 0; i < battlerSkills.length; i++)
     {
-    if(!skill.cost) return true;
-        return skill.cost.every(cost =>
-            Object.keys(cost).every(stat => battler.stats[stat] >= cost[stat])
-        );
-    });
-    return availableSkills;
-}
-
-function chooseSkill(availableSkills, battler, currentBattlers)
-{
-    if(!battler.agent || battler.agent.length === 0)
-    {
-        return Math.floor(Math.random() * availableSkills.length);
-    }
-
-    const sortedRules = [...battler.agent].sort((a, b) => b.priority - a.priority);
-
-    for(let rule of sortedRules)
-    {
-        if(!rule.conditions || rule.conditions.length === 0)
+        if(battlerSkills[i].cost === undefined)
         {
-            const skillIndex = availableSkills.findIndex(s => s.name === rule.action);
-            if(skillIndex !== -1) return skillIndex;
+            availableSkills.push(battlerSkills[i]);
         }
         else
         {
-            const conditionsMet = rule.conditions.every(condition => {
-                const { stat, operator, value } = condition;
-                let target = condition.target === "self" 
-                    ? battler 
-                    : currentBattlers.find(b => b.battlerType !== battler.battlerType && b.stats.isTargetable === true);
-                
-                if(!target) return false;
-
-                let threshold = condition.valueType === "percent"
-                    ? (target.stats[stat] / target.stats[`max${stat.charAt(0).toUpperCase() + stat.slice(1)}`]) * 100
-                    : value;
-
-                switch(operator)
-                {
-                    case "<":  return target.stats[stat] < threshold;
-                    case ">":  return target.stats[stat] > threshold;
-                    case "=":  return target.stats[stat] === threshold;
-                    case "<=": return target.stats[stat] <= threshold;
-                    case ">=": return target.stats[stat] >= threshold;
-                    default: return false;
-                }
-            });
-
-            if(conditionsMet)
+            getSkillCostResourceNames = Object.keys(battlerSkills[i].cost);
+            getSkillCostResourceNames.forEach(skillCost => 
             {
-                if(rule.chance < 100 && Math.random() * 100 > rule.chance) continue;
-                const skillIndex = availableSkills.findIndex(s => s.name === rule.action);
-                if(skillIndex !== -1) return skillIndex;
+                checkIfSkillCostIsAffordable = true;
+                if(battler.stats[skillCost] < battlerSkills[i].cost[skillCost].value)
+                {
+                    checkIfSkillCostIsAffordable = false;
+                }
+                
+            });
+            if(checkIfSkillCostIsAffordable === true)
+            {
+                availableSkills.push(battlerSkills[i]);
             }
         }
     }
-
-    return Math.floor(Math.random() * availableSkills.length);
+    return availableSkills;
 }
 
 export function getSkilltoUse(battler, currentBattlers) 
     {
+        let idSkill;
+        console.log("seconda fase: in getSkillToUse vedere a che punto sono le variabili");
         let availableSkills = getUsableSkills(battler);
-        let skillSelected = availableSkills[chooseSkill(availableSkills, battler, currentBattlers)];
+        console.log("seconda fase - availableSkills (agent.js) adesso ha: ", availableSkills);
+        idSkill = chooseSkill(availableSkills, battler, currentBattlers);
+        let skillSelected = availableSkills.find(id => id.id === idSkill);
+        //let skillSelected = availableSkills[chooseSkill(availableSkills, battler, currentBattlers)];
+        console.log("terza fase - skillSelected adesso ha: ", skillSelected);
 
-        if (skillSelected && skillSelected.effects && skillSelected.effects.length > 0) {
+        if (skillSelected && skillSelected.effects && skillSelected.effects.length > 0) 
+        {
             if(skillSelected.cost !== undefined)
             {
-                skillSelected.cost.forEach(cost => {
-                    Object.keys(cost).forEach(stat => {
-                        battler.stats[stat] -= cost[stat];
-                    });
-                });
+                let getallNameofCostResources = Object.keys(skillSelected.cost);
+                for(let i = 0; i<getallNameofCostResources.length;i++)
+                {
+                    battler.stats[getallNameofCostResources[i]] -= skillSelected.cost[getallNameofCostResources[i]].value;
+                }
             }
             
         return skillSelected;
-}
+        }
 
         console.warn("Skill non trovata o senza effetti!");
         return undefined; 

@@ -81,7 +81,7 @@
             "targetType": "enemy",
             "inBattle": true,
             "stats": {
-                "health": 10,
+                "health": 30,
                 "maxHealth": 10,
                 "mana": 10,
                 "attack": 2
@@ -128,7 +128,7 @@
                 "mana": 10,
                 "attack": 2
             },
-            "skills": ["heal","bigAttack"],
+            "skills": ["heal","attack"],
             "status": []
         }
     ],
@@ -147,10 +147,10 @@
         },
         {
             "name": "bigAttack",
-            "cost": [{
-                "health": { "value": 2, "allowLethal": false },
-                "mana": { "value": 4, "allowLethal": true }
-            }],
+            "cost": {
+                "mana": { "value": 1, "allowLethal": false },
+                "health": { "value": 1, "allowLethal": true }
+            },
             "effects": [
                 {
                     "value": "a_attack * 6 - b_attack * 2",
@@ -163,9 +163,9 @@
         },
         {
             "name": "heal",
-            "cost": [{
-                "mana": 6
-            }],
+            "cost": {
+                "mana": { "value": 6, "allowLethal": true }
+            },
             "effects": [
                 {
                     "value": "a_attack * 4",
@@ -179,9 +179,9 @@
         {
             "name": "resurrect",
             "targetOnlyWithStatus": ["KO"],
-            "cost": [{
-                "mana": 1
-            }],
+            "cost": {
+                "mana": { "value": 1, "allowLethal": false }
+            },
             "effects": [
                 {
                     "value": "a_attack * 4",
@@ -256,9 +256,9 @@
     ],
     "agent": [
     { "agentName": "aggressiveAgent", "assignTo": "player", "behaviour": [
-        { "priority": 100, "chance": 100, "conditions": [{ "target": "self", "stat": "health", "operator": "<", "value": 5 }], "action": "Heal" },
         { "priority": 80, "chance": 50, "conditions": [{ "target": "self", "stat": "health", "operator": ">", "value": 2 }], "action": "bigAttack" },
-        { "priority": 0, "chance": 100, "conditions": [], "action": "Attack" }
+        { "priority": 0, "chance": 100, "conditions": [], "action": "attack" },
+        { "priority": 100, "chance": 100, "conditions": [{ "target": "self", "stat": "health", "operator": "<", "value": 5 }], "action": "heal" }
     ]}
 ]
 }

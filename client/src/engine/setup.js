@@ -1,17 +1,23 @@
 export function setupGame(data)
 {
-
+    //give an ID on each skills
     data.skills.forEach((skill, i) => {
         skill.id = i;
     });
 
+    //let's work on each battler of the game
     data.battlers.forEach((battler, i) => 
     {
+        //we start setting up this variable because on the JSON we have only textual skills and we need the real skill objects instead
+        //to put inside the battler
         let getSkillObjects = [];
+
+        //let's set those new attributes especially if not set up before
         battler.stats.isTargetable ??= true;
         battler.stats.canHaveTurns ??= true;
-        battler.baseStats ??= structuredClone(battler.stats);
+        //let's give an ID even on each battler
         battler.id = i;
+        console.warn("setup.js: vedere a che cosa serve checkStatusParams");
         battler.checkStatusParams = [];
         
         if(battler.skills !== undefined && battler.skills.length > 0)
