@@ -1,11 +1,13 @@
 //vedere se creare una variabile temporanea come originalBattlerStats può aiutare
-export function checkStatus(battler, statusTrigger) 
+export function checkStatus(data, battler, statusTrigger) 
 {
+    console.log("inside checkStatus", battler.length, statusTrigger);
     for(let i=0; i<battler.length;i++)
     {
         
         if(battler[i].status.length <= 0 || battler[i].status === undefined)
         {
+            
             continue;
         }
         else
@@ -22,6 +24,7 @@ export function checkStatus(battler, statusTrigger)
                 {
                     if(status.trigger === statusTrigger)
                     {   
+                        
                         if(status.effects[j].stat !== undefined)
                         {
                             if(status.applyOnce === true)
@@ -43,10 +46,23 @@ export function checkStatus(battler, statusTrigger)
                                     
                                     break;
                                 }
+                                case "*":
+                                {
+                                    battler[i].stats[status.effects[j].stat] *= status.effects[j].value;
+                                    
+                                    break;
+                                }
+                                case "/":
+                                {
+                                    battler[i].stats[status.effects[j].stat] /= Math.floor(status.effects[j].value);
+                                    
+                                    break;
+                                }
                                 case "=":
                                 {
+                                    console.log("battler stat: ", battler[i].stats[status.effects[j].stat], "status valore: ", status.effects[j].value);
                                     battler[i].stats[status.effects[j].stat] = status.effects[j].value;
-                                    
+                                    console.log("battler stat: ", battler[i].stats[status.effects[j].stat], "status valore: ", status.effects[j].value);
                                     break;
                                 }
                             }  

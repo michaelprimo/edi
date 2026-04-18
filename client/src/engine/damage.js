@@ -23,6 +23,8 @@ export function applySkillDamageFormula(defenderTargetStat, damageValueFromFormu
             return defenderTargetStat *= damageValueFromFormula;
         case "/":
             return defenderTargetStat /= damageValueFromFormula;
+        case "=":
+            return defenderTargetStat === damageValueFromFormula;
         default:
             return defenderTargetStat;
     }

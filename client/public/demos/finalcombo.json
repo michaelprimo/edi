@@ -63,13 +63,13 @@
                 "checkBattlerGroup": "player",
                 "stat": "health",
                 "operator": ">",
-                "value": 10
+                "value": 30
             },
             "effects": 
                 {
                     "setStat": "health",
                     "operator": "=",
-                    "value": 10
+                    "value": 30
                 }
         }
 
@@ -105,11 +105,11 @@
         },
         {
             "name": "enemy",
-            "inBattle": false,
+            "inBattle": true,
             "battlerType": "enemy",
             "targetType": "player",
             "stats": {
-                "health": 4,
+                "health": 10,
                 "maxHealth": 10,
                 "mana": 10,
                 "attack": 2
@@ -148,31 +148,29 @@
         {
             "name": "bigAttack",
             "cost": {
-                "mana": { "value": 1, "allowLethal": false },
-                "health": { "value": 1, "allowLethal": true }
+                "mana": { "value": 1, "allowLethal": true },
+                "health": { "value": 10, "allowLethal": true }
             },
             "effects": [
                 {
                     "value": "a_attack * 6 - b_attack * 2",
                     "targetSkill": "enemy",
                     "targetStat": "health",
-                    "operator": "-",
-                    "addStatus": "Regen"
+                    "operator": "-"
                 }
             ]
         },
         {
             "name": "heal",
             "cost": {
-                "mana": { "value": 6, "allowLethal": true }
+                "mana": { "value": 2, "allowLethal": true }
             },
             "effects": [
                 {
                     "value": "a_attack * 4",
                     "targetSkill": "ally",
                     "targetStat": "health",
-                    "operator": "+",
-                    "addStatus": "Regen"
+                    "operator": "+"
                 }
             ]
         },
@@ -256,9 +254,13 @@
     ],
     "agent": [
     { "agentName": "aggressiveAgent", "assignTo": "player", "behaviour": [
-        { "priority": 80, "chance": 50, "conditions": [{ "target": "self", "stat": "health", "operator": ">", "value": 2 }], "action": "bigAttack" },
+        { "priority": 100, "chance": 100, "conditions": [{ "target": "target", "stat": "health", "operator": "<", "value": 8 }], "action": "bigAttack" },
         { "priority": 0, "chance": 100, "conditions": [], "action": "attack" },
-        { "priority": 100, "chance": 100, "conditions": [{ "target": "self", "stat": "health", "operator": "<", "value": 5 }], "action": "heal" }
+        { "priority": 80, "chance": 100, "conditions": [{ "target": "self", "stat": "health", "operator": "<", "value": 10 }], "action": "heal" }
+    ]},
+    { "agentName": "healingAgent", "assignTo": "enemy2", "behaviour": [
+        { "priority": 100, "chance": 100, "conditions": [{ "target": "allAllies", "stat": "health", "operator": "<", "value": 10 }], "action": "heal", "targetLook": "lowest", "targetStat": "health"},
+        { "priority": 0, "chance": 100, "conditions": [], "action": "attack", "targetLook": "lowest", "targetStat": "health"}
     ]}
 ]
 }

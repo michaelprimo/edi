@@ -2,36 +2,22 @@ import { chooseSkill } from './agent.js';
 
 function getUsableSkills(battler)
 {
-    let battlerSkills = battler.skills;
-    let availableSkills = [];
-    let getSkillCostResourceNames;
-    let checkIfSkillCostIsAffordable;
+    return battler.skills.filter(skill => {
+        if (!skill.cost) return true;
 
-    for(let i = 0; i < battlerSkills.length; i++)
-    {
-        if(battlerSkills[i].cost === undefined)
-        {
-            availableSkills.push(battlerSkills[i]);
-        }
-        else
-        {
-            getSkillCostResourceNames = Object.keys(battlerSkills[i].cost);
-            getSkillCostResourceNames.forEach(skillCost => 
-            {
-                checkIfSkillCostIsAffordable = true;
-                if(battler.stats[skillCost] < battlerSkills[i].cost[skillCost].value)
-                {
-                    checkIfSkillCostIsAffordable = false;
-                }
-                
-            });
-            if(checkIfSkillCostIsAffordable === true)
-            {
-                availableSkills.push(battlerSkills[i]);
+        return Object.keys(skill.cost).every(resource => {
+            const stat = battler.stats[resource];
+            const costData = skill.cost[resource];
+            const cost = costData.value;
+
+            if (costData.allowLethal === false) {
+                return (stat - cost) > 0;
             }
-        }
-    }
-    return availableSkills;
+
+            // default: allow lethal
+            return (stat - cost) >= 0;
+        });
+    });
 }
 
 export function getSkilltoUse(battler, currentBattlers) 
@@ -41,7 +27,9 @@ export function getSkilltoUse(battler, currentBattlers)
         let availableSkills = getUsableSkills(battler);
         console.log("seconda fase - availableSkills (agent.js) adesso ha: ", availableSkills);
         idSkill = chooseSkill(availableSkills, battler, currentBattlers);
+        console.log("idSkill: ", idSkill);
         let skillSelected = availableSkills.find(id => id.id === idSkill);
+        
         //let skillSelected = availableSkills[chooseSkill(availableSkills, battler, currentBattlers)];
         console.log("terza fase - skillSelected adesso ha: ", skillSelected);
 
@@ -62,3 +50,13 @@ export function getSkilltoUse(battler, currentBattlers)
         console.warn("Skill non trovata o senza effetti!");
         return undefined; 
     }
+
+export function putAllSkillEffectsOnArray(selectedSkill)
+{
+    let getAllSkillEffects = [];
+    selectedSkill.effects.forEach(effect => 
+    {
+        getAllSkillEffects.push(effect.targetSkill);
+    })
+    return getAllSkillEffects;
+}

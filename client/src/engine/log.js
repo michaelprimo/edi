@@ -22,7 +22,7 @@ function logDictionary(actionDictionary, actionValues)
         case "showTurns":
             return `TURNO ${actionValues.numberOfTurnsPassed}`;
         case "battlerTurnStart":
-            return `Ora è il turno di ${actionValues.battlerName}! Stats: ${structuredClone(actionValues.battlerStats)}`;
+            return `Ora è il turno di ${actionValues.battlerName}! Stats: ${structuredClone(actionValues.battlerStats)} Status: Stats: ${structuredClone(actionValues.battlerStatus)}`;
         case "skillUse":
             return `${actionValues.battlerName} usa ${actionValues.battlerSkillName}!`;
         case "damageDealtWithSkill":

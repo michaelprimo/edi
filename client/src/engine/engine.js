@@ -5,7 +5,7 @@ import { checkStatus } from './status.js';
 import { getDamageValueFromFormula, applySkillDamageFormula } from './damage.js';
 import { triggerActions } from './trigger.js';
 import { getTargetForSkill } from './target.js';
-import { getSkilltoUse } from './skills.js';
+import { getSkilltoUse, putAllSkillEffectsOnArray } from './skills.js';
 import { setupGame } from './setup.js';
 import { Logger } from './log.js';
 
@@ -27,7 +27,7 @@ export function runEngine(JSONData)
         let statusInstance;
         
         console.warn("trovare un altro modo per finire la simulazione che non sia 'data.game.turns <= 10' per forza");
-        while((checkRules === undefined || checkRules === null) && data.game.turns <= 10)
+        while((checkRules === undefined || checkRules === null) && data.game.turns <= 999)
         {
 
             data.game.turns++;
@@ -41,7 +41,8 @@ export function runEngine(JSONData)
             {
                 logger.log("battlerTurnStart", {
                         "battlerName": currentBattlers[i].name, 
-                        "battlerStats": JSON.stringify(currentBattlers[i].stats) 
+                        "battlerStats": JSON.stringify(currentBattlers[i].stats),
+                        "battlerStatus": JSON.stringify(currentBattlers[i].status)
                     });
         
                 if(currentBattlers[i].stats.canHaveTurns === true)
@@ -58,15 +59,11 @@ export function runEngine(JSONData)
                             "battlerSkillName": selectedSkill.name
                         });
 
-                        let getAllSkillEffects = [];
+                        let chooseTarget = getTargetForSkill(currentBattlers, currentBattlers[i], selectedSkill);
+                        
 
-                        selectedSkill.effects.forEach(effect => {
+                        console.log(currentBattlers[i].agent);
 
-                            getAllSkillEffects.push(effect.targetSkill);
-                        })
-
-                        let chooseTarget = getTargetForSkill(currentBattlers, i, getAllSkillEffects, selectedSkill.targetOnlyWithStatus);
-        
                         for(let j = 0; j<chooseTarget.length; j++)
                         {
                             if(chooseTarget[j] !== undefined)

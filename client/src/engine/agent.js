@@ -1,9 +1,12 @@
 import * as math from 'mathjs';
+//import { putAllSkillEffectsOnArray } from './skills.js';
 
 export function chooseSkill(availableSkills, battler, currentBattlers) 
 {
+    
     console.log("battler.agent:", battler.agent, " availableSkills:", availableSkills);
 
+    
     if(battler.agent)
     {
         let sortAgentRules = battler.agent.sort((a,b) => a.priority <= b.priority);
@@ -13,6 +16,7 @@ export function chooseSkill(availableSkills, battler, currentBattlers)
         for(let i = 0; i< sortAgentRules.length; i++)
         {
             console.log("quarta fase: vedere se la skill esiste nello skillset. Se non c'è e si vede solo nell'agente allora in automatico si salta");
+            
             confirmSkillExists = checkIfSkillIsAvailable(sortAgentRules[i], availableSkills);
             console.log("quarta fase: confirmSkillExists: ", confirmSkillExists);
 
@@ -39,16 +43,27 @@ export function chooseSkill(availableSkills, battler, currentBattlers)
     }
     else
     {
+        if(availableSkills.length > 0)
+        {
+            let randomIdSkill = availableSkills[Math.floor(Math.random() * availableSkills.length)].id;
+            console.log("nessun battler.agent! randomIdSkill è: ", randomIdSkill);
+            return randomIdSkill; 
+        }
         
-        let randomIdSkill = availableSkills[Math.floor(Math.random() * availableSkills.length)].id;
-        console.log("nessun battler.agent! randomIdSkill è: ", randomIdSkill);
-        return randomIdSkill; 
     }
 
        
 }
-
-
+/*
+export function chooseTargetFilter()
+{
+    console.log("LOOK: ");
+            if(sortAgentRules[i].targetLook !== undefined && sortAgentRules[i].targetStat !== undefined)
+            {
+                console.log("CE L'HO!!!");
+            }
+}
+*/
 function checkActionsfromPriority(rule, battler, currentBattlers, availableSkills)
 {
     console.log("rule: ", rule);
@@ -85,30 +100,59 @@ function checkActionsfromPriority(rule, battler, currentBattlers, availableSkill
 
 function checkActionsFromConditions(rule, battler, currentBattlers)
 {
-    console.log("settima fase: si fa un check di condizioni delle azioni. Se non ce ne sono, l'azione passa di default, altrimenti si continua");
-    let verifyCondition;
-    if(rule.conditions)
-    {
-        rule.conditions.forEach(condition => {
-            const { target, stat, operator, value } = condition;
-            switch(target)
-            {
-                case "self":
-                {
-                    verifyCondition = checkStatValue(operator, battler.stats[stat], value);
-                }
-            }
-        });
-        console.log("settima fase: verifyCondition", verifyCondition);
-        return verifyCondition;
+    if (!rule.conditions || rule.conditions.length === 0) {
+        return true;
     }
-    
+    //self works, the rest will be fixed in 0.2
+    return rule.conditions.every(condition => {
+        const { target, stat, operator, value } = condition;
+
+        switch (target)
+        {
+            case "self":
+                return checkStatValue(operator, battler.stats[stat], value);
+
+            case "all":
+                return currentBattlers.every(b => 
+                    checkStatValue(operator, b.stats[stat], value)
+                );
+
+            case "allEnemies":
+                return currentBattlers
+                    .filter(b => b.battlerType === battler.targetType)
+                    .every(b => checkStatValue(operator, b.stats[stat], value));
+
+            case "enemy":
+                return currentBattlers
+                    .filter(b => b.battlerType === battler.targetType)
+                    .some(b => checkStatValue(operator, b.stats[stat], value));
+
+            case "allAllies":
+                return currentBattlers
+                    .filter(b => b.battlerType === battler.battlerType && b !== battler)
+                    .every(b => checkStatValue(operator, b.stats[stat], value));
+
+            case "ally":
+                return currentBattlers
+                    .filter(b => b.battlerType === battler.battlerType && b !== battler)
+                    .some(b => checkStatValue(operator, b.stats[stat], value));
+
+            case "target":
+            case "allTargets":
+                return currentBattlers
+                    .filter(b => b.battlerType === battler.targetType)
+                    .some(b => checkStatValue(operator, b.stats[stat], value));
+
+            default:
+                return false;
+        }
+    });
 }
 
 
 function checkIfSkillIsAvailable(rule, availableSkills)
 {
-    //check to substitute this with a Object.find later
+    //check to substitute this with a Object.find later like "return x.find(all the function)".
     for(let i = 0; i<availableSkills.length;i++)
     {
         if(rule.action === availableSkills[i].name)
@@ -119,68 +163,15 @@ function checkIfSkillIsAvailable(rule, availableSkills)
     return false;
 }
 
-function checkStatValue(operator, battlerStat, value)
+function checkStatValue(operator, statValue, value)
 {
     switch(operator)
     {
-        case "<":
-        {
-            if(battlerStat < value)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        case ">":
-        {
-            if(battlerStat > value)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        case "=":
-        {
-            if(battlerStat === value)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        case ">=":
-        {
-            if(battlerStat >= value)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        case "<=":
-        {
-            if(battlerStat <= value)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        default:
-        {
-            return false;
-        }
+        case ">":  return statValue > value;
+        case "<":  return statValue < value;
+        case "=":  return statValue === value;
+        case ">=": return statValue >= value;
+        case "<=": return statValue <= value;
+        default:   return false;
     }
 }
