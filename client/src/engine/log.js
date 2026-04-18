@@ -8,7 +8,7 @@ export class Logger {
     log(actionDictionary, actionValues) {
         this.logs.push(logDictionary(actionDictionary, actionValues));
     }
-    
+
     getLogs() {
         return this.logs;
     }

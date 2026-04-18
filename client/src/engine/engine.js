@@ -61,7 +61,6 @@ export function runEngine(JSONData)
 
                         let chooseTarget = getTargetForSkill(currentBattlers, currentBattlers[i], selectedSkill);
                         
-
                         console.log(currentBattlers[i].agent);
 
                         for(let j = 0; j<chooseTarget.length; j++)
@@ -127,6 +126,7 @@ export function runEngine(JSONData)
                             {
                                 logger.log("declareLosers", { "losers": losersEntry.losers[0].battlerType });
                             }
+                            return { checkRules, logs: logger.getLogs() };
                         }
                     }
                 }
@@ -137,7 +137,7 @@ export function runEngine(JSONData)
             }
                 triggerActions(data, currentBattlers, "onTurnEnd");
         }
-             return { checkRules, logs: logger.getLogs() };
+             
     }
 
 function putBattlersInBattle(currentBattlers)

@@ -11,24 +11,57 @@ export default function Engine({ JSONData })
     //variable for that and being a state we can insert everything in the document/webpage.
     const [logs, setLogs] = useState([]);
 
-    useEffect(() => {
+   useEffect(() => {
 
-    //this variable is to substitute to "let checkValidation = validateData(JSONData)", so we know if the data is correct before running
-    //simulations and getting errors
     let checkValidation = true;
-    if(checkValidation === true)
+
+    if (checkValidation === true)
     {
-        //we can put the amount of simulations we want.
-        console.warn("put in Engine.jsx a winrate calculator, getting winners and losers from each simulations");
-        for(let i = 0; i < 1; i++)
+        let winCount = {};
+        let loseCount = {};
+        let simulations = 100; 
+
+        let allLogs = [];
+
+        for(let i = 0; i < simulations; i++)
         {
-            //get the data and run Edi
             let result = runEngine(JSONData);
-            //set the logs
-            let allLogs = [`Simulation ${i+1}`, ...result.logs];
-            setLogs(prev => [...prev, ...allLogs]);
+
+            const winnersEntry = result.checkRules?.find(r => r.winners);
+            const losersEntry = result.checkRules?.find(r => r.losers);
+
+            if (winnersEntry)
+            {
+                const winner = winnersEntry.winners[0].battlerType;
+                winCount[winner] = (winCount[winner] || 0) + 1;
+            }
+
+            if (losersEntry)
+            {
+                const loser = losersEntry.losers[0].battlerType;
+                loseCount[loser] = (loseCount[loser] || 0) + 1;
+            }
+
+            allLogs.push(`Simulation ${i+1}`, ...result.logs);
         }
+
+        // winrate calculation
+        let winRates = {};
+
+        Object.keys(winCount).forEach(type => {
+            winRates[type] = ((winCount[type] / simulations) * 100).toFixed(2);
+        });
+
+        // add to log
+        allLogs.push("---- WIN RATES ----");
+
+        Object.entries(winRates).forEach(([type, rate]) => {
+            allLogs.push(`${type}: ${rate}%`);
+        });
+
+        setLogs(allLogs);
     }
+
 }, []);
 
     return (

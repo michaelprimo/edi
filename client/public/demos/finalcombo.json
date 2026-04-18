@@ -84,7 +84,7 @@
                 "health": 30,
                 "maxHealth": 10,
                 "mana": 10,
-                "attack": 2
+                "attack": 5
             },
             "skills": ["heal","attack", "bigAttack"],
             "status": []
@@ -109,10 +109,10 @@
             "battlerType": "enemy",
             "targetType": "player",
             "stats": {
-                "health": 10,
+                "health": 15,
                 "maxHealth": 10,
                 "mana": 10,
-                "attack": 2
+                "attack": 3
             },
             "skills": ["heal","bigAttack"],
             "status": []
@@ -123,10 +123,10 @@
             "battlerType": "enemy",
             "targetType": "player",
             "stats": {
-                "health": 10,
+                "health": 15,
                 "maxHealth": 10,
                 "mana": 10,
-                "attack": 2
+                "attack": 3
             },
             "skills": ["heal","attack"],
             "status": []
