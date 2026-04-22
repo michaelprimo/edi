@@ -17,8 +17,6 @@ export function setupGame(data)
         battler.stats.canHaveTurns ??= true;
         //let's give an ID even on each battler
         battler.id = i;
-        console.warn("setup.js: vedere a che cosa serve checkStatusParams");
-        battler.checkStatusParams = [];
         
         if(battler.skills !== undefined && battler.skills.length > 0)
         {

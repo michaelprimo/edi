@@ -1,7 +1,6 @@
 //vedere se creare una variabile temporanea come originalBattlerStats può aiutare
 export function checkStatus(data, battler, statusTrigger) 
 {
-    console.log("inside checkStatus", battler.length, statusTrigger);
     for(let i=0; i<battler.length;i++)
     {
         
@@ -60,9 +59,7 @@ export function checkStatus(data, battler, statusTrigger)
                                 }
                                 case "=":
                                 {
-                                    console.log("battler stat: ", battler[i].stats[status.effects[j].stat], "status valore: ", status.effects[j].value);
                                     battler[i].stats[status.effects[j].stat] = status.effects[j].value;
-                                    console.log("battler stat: ", battler[i].stats[status.effects[j].stat], "status valore: ", status.effects[j].value);
                                     break;
                                 }
                             }  

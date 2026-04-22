@@ -1,6 +1,6 @@
 {
     "game": {
-        "name": "finalcombo",
+        "name": "Wilson: the Game",
         "turns": 0,
         "turnSystemMainStat": "speed"
     },
@@ -77,15 +77,13 @@
     ],
     "battlers": [
         {
-            "name": "player",
+            "name": "Snake",
             "battlerType": "player",
             "targetType": "enemy",
             "inBattle": true,
             "stats": {
-                "health": 35,
-                "maxHealth": 10,
-                "mana": 10,
-                "attack": 4,
+                "health": 50,
+                "attack": 3,
                 "speed": 100
             },
             "skills": ["heal","attack", "bigAttack"],
@@ -107,7 +105,7 @@
             "status": []
         },
         {
-            "name": "enemy",
+            "name": "Magic Cat",
             "inBattle": true,
             "battlerType": "enemy",
             "targetType": "player",
@@ -147,35 +145,6 @@
                     "targetSkill": "enemy",
                     "targetStat": "health",
                     "operator": "-"
-                }
-            ]
-        },
-        {
-            "name": "bigAttack",
-            "cost": {
-                "mana": { "value": 1, "allowLethal": true },
-                "health": { "value": 10, "allowLethal": true }
-            },
-            "effects": [
-                {
-                    "value": "a_attack * 6 - b_attack * 2",
-                    "targetSkill": "enemy",
-                    "targetStat": "health",
-                    "operator": "-"
-                }
-            ]
-        },
-        {
-            "name": "heal",
-            "cost": {
-                "mana": { "value": 2, "allowLethal": true }
-            },
-            "effects": [
-                {
-                    "value": "a_attack * 4",
-                    "targetSkill": "ally",
-                    "targetStat": "health",
-                    "operator": "+"
                 }
             ]
         },

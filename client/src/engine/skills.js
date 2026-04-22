@@ -23,15 +23,11 @@ function getUsableSkills(battler)
 export function getSkilltoUse(battler, currentBattlers) 
     {
         let idSkill;
-        console.log("seconda fase: in getSkillToUse vedere a che punto sono le variabili");
         let availableSkills = getUsableSkills(battler);
-        console.log("seconda fase - availableSkills (agent.js) adesso ha: ", availableSkills);
         idSkill = chooseSkill(availableSkills, battler, currentBattlers);
-        console.log("idSkill: ", idSkill);
         let skillSelected = availableSkills.find(id => id.id === idSkill);
         
         //let skillSelected = availableSkills[chooseSkill(availableSkills, battler, currentBattlers)];
-        console.log("terza fase - skillSelected adesso ha: ", skillSelected);
 
         if (skillSelected && skillSelected.effects && skillSelected.effects.length > 0) 
         {
@@ -47,7 +43,6 @@ export function getSkilltoUse(battler, currentBattlers)
         return skillSelected;
         }
 
-        console.warn("Skill non trovata o senza effetti!");
         return undefined; 
     }
 

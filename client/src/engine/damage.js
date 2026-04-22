@@ -1,4 +1,5 @@
 import * as math from 'mathjs';
+import { Logger } from './log.js';
 
 export function getDamageValueFromFormula(formula, attacker, defender)
 {
@@ -12,7 +13,8 @@ export function getDamageValueFromFormula(formula, attacker, defender)
 
 export function applySkillDamageFormula(defenderTargetStat, damageValueFromFormula, skillEffectOperator)
 {
-
+    
+    
     switch(skillEffectOperator)
     {
         case "+":
@@ -24,7 +26,7 @@ export function applySkillDamageFormula(defenderTargetStat, damageValueFromFormu
         case "/":
             return defenderTargetStat /= damageValueFromFormula;
         case "=":
-            return defenderTargetStat === damageValueFromFormula;
+            return defenderTargetStat = damageValueFromFormula;
         default:
             return defenderTargetStat;
     }

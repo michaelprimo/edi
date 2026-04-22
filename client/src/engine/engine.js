@@ -8,11 +8,16 @@ import { getTargetForSkill } from './target.js';
 import { getSkilltoUse, putAllSkillEffectsOnArray } from './skills.js';
 import { setupGame } from './setup.js';
 import { Logger } from './log.js';
+import { Agents } from './JSONdata.js';
 
 export function runEngine(JSONData)
     {
         //create an isolated clone of the JSON data so we can duplicate and manipulate it at will without problems
         const data = structuredClone(JSONData);
+
+        const agents = new Agents();
+        
+        agents.log(data.agent);
         //we start setting up the log manager that makes us see the content on what's happening on screen
         const logger = new Logger();
         //here we add some special fields on the data and making checks of it
@@ -33,7 +38,7 @@ export function runEngine(JSONData)
             data.game.turns++;
             logger.log("showTurns", { numberOfTurnsPassed: data.game.turns });
             
-            currentBattlers = shuffleObjects(currentBattlers);
+            currentBattlers = shuffleObjects(currentBattlers, data.game);
            
             checkRules = triggerActions(data, currentBattlers, "onTurnStart");
             
@@ -47,10 +52,8 @@ export function runEngine(JSONData)
         
                 if(currentBattlers[i].stats.canHaveTurns === true)
                 {
-                    console.log("prima fase: selezionare skill da engine.js a getSkilltoUse in skills.js");
                     selectedSkill = getSkilltoUse(currentBattlers[i], currentBattlers);
-                    console.log("selectedSkill alla fine è: ", selectedSkill);
-
+                    
                     if(selectedSkill)
                     {
                         logger.log("skillUse", 
@@ -61,7 +64,6 @@ export function runEngine(JSONData)
 
                         let chooseTarget = getTargetForSkill(currentBattlers, currentBattlers[i], selectedSkill);
                         
-                        console.log(currentBattlers[i].agent);
 
                         for(let j = 0; j<chooseTarget.length; j++)
                         {

@@ -19,6 +19,8 @@ function logDictionary(actionDictionary, actionValues)
 {
     switch(actionDictionary)
     {
+        case "damageDealt":
+            return `OH NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO `;
         case "showTurns":
             return `TURNO ${actionValues.numberOfTurnsPassed}`;
         case "battlerTurnStart":
