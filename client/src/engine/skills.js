@@ -26,8 +26,6 @@ export function getSkilltoUse(battler, currentBattlers)
         let availableSkills = getUsableSkills(battler);
         idSkill = chooseSkill(availableSkills, battler, currentBattlers);
         let skillSelected = availableSkills.find(id => id.id === idSkill);
-        
-        //let skillSelected = availableSkills[chooseSkill(availableSkills, battler, currentBattlers)];
 
         if (skillSelected && skillSelected.effects && skillSelected.effects.length > 0) 
         {
@@ -53,5 +51,5 @@ export function putAllSkillEffectsOnArray(selectedSkill)
     {
         getAllSkillEffects.push(effect.targetSkill);
     })
-    return getAllSkillEffects;
+    return [...new Set(getAllSkillEffects)];
 }

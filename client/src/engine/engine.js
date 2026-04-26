@@ -5,7 +5,7 @@ import { checkStatus } from './status.js';
 import { getDamageValueFromFormula, applySkillDamageFormula } from './damage.js';
 import { triggerActions } from './trigger.js';
 import { getTargetForSkill } from './target.js';
-import { getSkilltoUse, putAllSkillEffectsOnArray } from './skills.js';
+import { getSkilltoUse } from './skills.js';
 import { setupGame } from './setup.js';
 import { Logger } from './log.js';
 import { Agents } from './JSONdata.js';
@@ -25,25 +25,27 @@ export function runEngine(JSONData)
 
         let currentBattlers = putBattlersInBattle(structuredClone(data.battlers));
         currentBattlers = putAgentsinBattlers(data, currentBattlers);
+        let currentBattlers_turnStartState = structuredClone(currentBattlers); 
         let selectedSkill;
         let checkRules = undefined;
         let getWinners;
         let statusAddedFromSkill;
         let statusInstance;
+        let stopSimulation = false;
         
         console.warn("trovare un altro modo per finire la simulazione che non sia 'data.game.turns <= 10' per forza");
-        while((checkRules === undefined || checkRules === null) && data.game.turns <= 999)
+        while((checkRules === undefined || checkRules === null) && data.game.turns <= data.game.maxSimulationTurns)
         {
-
             data.game.turns++;
+            currentBattlers_turnStartState = structuredClone(currentBattlers);
             logger.log("showTurns", { numberOfTurnsPassed: data.game.turns });
             
             currentBattlers = shuffleObjects(currentBattlers, data.game);
-           
-            checkRules = triggerActions(data, currentBattlers, "onTurnStart");
+            checkRules = triggerActions(data, currentBattlers,  "onTurnStart");
             
             for(let i = 0; i<currentBattlers.length; i++)
             {
+                checkRules = triggerActions(data, currentBattlers,  "onActionStart");
                 logger.log("battlerTurnStart", {
                         "battlerName": currentBattlers[i].name, 
                         "battlerStats": JSON.stringify(currentBattlers[i].stats),
@@ -74,6 +76,13 @@ export function runEngine(JSONData)
                                 {
 
                                     let damageValueFromSkillFormula = getDamageValueFromFormula(selectedSkill.effects[k].value, currentBattlers[i], chooseTarget[j]);
+
+                                    /*
+                                    if()
+                                    {
+
+                                    }
+                                    */
                                     chooseTarget[j].stats[selectedSkill.effects[k].targetStat] = applySkillDamageFormula(chooseTarget[j].stats[selectedSkill.effects[k].targetStat], damageValueFromSkillFormula, selectedSkill.effects[k].operator);
                                     
                                     switch(selectedSkill.effects[k].operator)
@@ -101,12 +110,13 @@ export function runEngine(JSONData)
                                             chooseTarget[j].status = [];
                                         }
                                         
-                                        statusAddedFromSkill = data.status.find(chosenStatus => chosenStatus.name === selectedSkill.effects[k].addStatus);
+                                        statusAddedFromSkill = data.status.find(chosenStatus => chosenStatus.name === selectedSkill.effects[k].addStatus.nameStatus);
                                         
-                                        let checkIfStatusExists = chooseTarget[j].status.find(findStatus => findStatus.name === selectedSkill.effects[k].addStatus);
+                                        let checkIfStatusExists = chooseTarget[j].status.find(findStatus => findStatus.name === selectedSkill.effects[k].addStatus.nameStatus);
                                         if(checkIfStatusExists === undefined)
                                         {
                                             statusInstance = structuredClone(statusAddedFromSkill);
+                                            statusInstance.stacks = selectedSkill.effects[k].addStatus.stacks;
                                             chooseTarget[j].status.push(statusInstance);
                                         }
                                     } 
@@ -114,9 +124,10 @@ export function runEngine(JSONData)
                                 
                             }
                         }
-                        checkRules = triggerActions(data, currentBattlers, "onActionEnd");
+                        checkRules = triggerActions(data, currentBattlers,  "onActionEnd");
                         if(checkRules !== null)
                         {
+                            console.log("checkRules: ", checkRules);
                             const winnersEntry = checkRules.find(r => r.winners !== undefined);
                             const losersEntry = checkRules.find(r => r.losers !== undefined);
                             
@@ -137,7 +148,7 @@ export function runEngine(JSONData)
                     logger.log("noResources", {"battlerName": currentBattlers[i].name});
                 }
             }
-                triggerActions(data, currentBattlers, "onTurnEnd");
+                triggerActions(data, currentBattlers,  "onTurnEnd");
         }
              
     }

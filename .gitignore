@@ -9,6 +9,7 @@ lerna-debug.log*
 *deletethis.txt
 edi*
 
+snakeescape.json
 
 node_modules
 dist

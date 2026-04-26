@@ -7,7 +7,7 @@ import Engine from "./Engine";
 
 // Add new demos here in the future
 const DEMO_LIST = [
-    { label: "Final Combo", path: "/demos/finalcombo.json" },
+    { label: "Test Game", path: "/demos/testgame.json" },
 ];
 
 const Home = () => {

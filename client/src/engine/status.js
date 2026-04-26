@@ -6,7 +6,6 @@ export function checkStatus(data, battler, statusTrigger)
         
         if(battler[i].status.length <= 0 || battler[i].status === undefined)
         {
-            
             continue;
         }
         else
@@ -26,10 +25,24 @@ export function checkStatus(data, battler, statusTrigger)
                         
                         if(status.effects[j].stat !== undefined)
                         {
-                            if(status.applyOnce === true)
-                            {
-                                
-                            }
+                            if(status.applyOnce === true) {
+                                console.log(battler[i].id);
+                               
+                                const originalBattler = data.battlers.find(b => b.id === battler[i].id);
+
+                                if (originalBattler) 
+                                {
+                                    console.log("Trovato originale!", originalBattler.name);
+                                    
+                                    let baseValue = originalBattler.stats[status.effects[j].stat];
+                                  
+                                    battler[i].stats[status.effects[j].stat] = baseValue;
+                                } 
+                                else 
+                                {
+                                    console.error("Non ho trovato il battler con ID:", battler[i].id, "dentro data.battlers");
+                                }
+                        }
 
                             switch(status.effects[j].operator)
                             {
@@ -75,6 +88,7 @@ export function checkStatus(data, battler, statusTrigger)
                     {
                         if(status.applyOnce === true)
                         {
+                            console.log("battler:", battler[i]);
                             battler[i].checkStatusParams.push(status.effects[j].stat);
                         }
                         status.turns--;
@@ -82,9 +96,8 @@ export function checkStatus(data, battler, statusTrigger)
                 }
             });
             
-            battler[i].status = battler[i].status.filter(s => s.turns !== 0);
+            battler[i].status = battler[i].status.filter(s => s.turns !== 0 && s.stacks !== 0);
                  
         }
-    }
-       
+    } 
 }

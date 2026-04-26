@@ -3,6 +3,7 @@ import { putAllSkillEffectsOnArray } from './skills.js';
 export function getTargetForSkill(currentBattlers, current, selectedSkill) {
 
     let targetType = putAllSkillEffectsOnArray(selectedSkill);
+    console.log("targetType:", targetType);
     const sortedBattlers = [...currentBattlers].sort((a, b) => a.id - b.id);
     let targetBattlers = [];
 

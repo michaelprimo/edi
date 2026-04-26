@@ -47,12 +47,13 @@ export function checkRuleCondition(data, battlerData, ruleTrigger) {
         if(rule.effects.applyStatus) {
             ruleResults.forEach(battler => 
                 {
-                const hasStatus = battler.status.some(s => s.name === rule.effects.applyStatus);
+                const hasStatus = battler.status.some(s => s.name === rule.effects.applyStatus.nameStatus);
                 
                 if(!hasStatus) 
                 {
-                    const getStatus = data.status.find(s => s.name === rule.effects.applyStatus);
+                    const getStatus = data.status.find(s => s.name === rule.effects.applyStatus.nameStatus);
                     const clonedStatus = structuredClone(getStatus);
+                    clonedStatus.stacks = rule.effects.applyStatus.stacks;
                     battler.status.push(clonedStatus);
                     
                 }
@@ -99,6 +100,7 @@ export function checkRuleCondition(data, battlerData, ruleTrigger) {
     
     if(setSimulationResults.length > 0)
     {
+        console.log("setSimulationResults: ", setSimulationResults)
         return setSimulationResults;
     }
     else 

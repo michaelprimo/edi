@@ -1,0 +1,314 @@
+{
+    "game": {
+        "name": "Snake Escape",
+        "turns": 0,
+        "maxSimulationTurns": 999,
+        "turnSystemMainStat": "speed"
+    },
+    "rules": [
+        {
+            "trigger": "onActionEnd",
+            
+            "condition": {
+                "checkBattlerGroup": "all",
+                "stat": "health",
+                "operator": "<=",
+                "value": 0
+            },
+            "effects": 
+                {
+                    
+                    "applyStatus": {"nameStatus": "KO", "stacks": 1}
+                }
+            
+            
+        },
+        {
+            "trigger": "onActionEnd",
+            "condition": {
+                "checkBattlerGroup": "player",
+                "haveStatus": "KO"
+            },
+            "effects": 
+                {
+                    "declareWinnerGroup": "enemy",
+                    "declareLoserGroup": "player"
+                }
+        },
+         {
+            "trigger": "onActionEnd",
+            "condition": {
+                "checkBattlerGroup": "enemy",
+                "haveStatus": "KO"
+            },
+            "effects": 
+                {
+                    
+                    "declareWinnerGroup": "player",
+                    "declareLoserGroup": "enemy"
+                }
+        },
+         {
+            "trigger": "onActionEnd",
+            "condition": {
+                "checkBattlerGroup": "player",
+                "stat": "snakeShield",
+                "operator": "<=",
+                "value": 0
+            },
+            "effects": 
+                {
+                    "removeStatus": "snakeShield"
+                }
+        },
+        {
+            "trigger": "onTurnStart",
+            "condition": {
+                "checkBattlerGroup": "player",
+                "stat": "snakeShield",
+                "operator": "<",
+                "value": 0
+            },
+            "effects": 
+                {
+                    "setStat": "snakeShield",
+                    "operator": "=",
+                    "value": 0
+                }
+        }
+        
+
+    ],
+    "battlers": [
+        {
+            "name": "Snake",
+            "battlerType": "player",
+            "targetType": "enemy",
+            "inBattle": true,
+            "stats": {
+                "level": 50,
+                "health": 50,
+                "attack": 3,
+                "speed": 100,
+                "defense": 0,
+                "M4": 8,
+                "Pickaxe": 8,
+                "DesertEagle": 8,
+                "snakeShield": 0
+            },
+            "skills": ["attackUnharmed", "attackPickaxe", "attackDesertEagle", "attackM4","snakeGuard"],
+            "status": []
+        },
+        {
+            "name": "Soldier",
+            "inBattle": true,
+            "battlerType": "enemy",
+            "targetType": "player",
+            "stats": {
+                "health": 50,
+                "defense": 0,
+                "attack": 4,
+                "speed": 10
+            },
+            "skills": ["evasion"],
+            "status": []
+        }
+    ],
+    "skills": 
+    [
+        {
+            "name": "attackUnharmed",
+            "effects": [
+                {
+                    "value": "ceil(max(0, (a_attack) * (1 - b_defense / 100)))",
+                    "targetSkill": "enemy",
+                    "targetStat": "health",
+                    "operator": "-"
+                }
+            ]
+        },
+        {
+            "name": "attackM4",
+            "cost": {
+                "M4": { "value": 1, "allowLethal": true }
+            },
+            "effects": [
+                {
+                    "value": "ceil(max(0, (a_attack+ 17) * (1 - b_defense / 100)))",
+                    "targetSkill": "enemy",
+                    "targetStat": "health",
+                    "operator": "-"
+                }
+            ]
+        },
+        {
+            "name": "attackPickaxe",
+            "cost": {
+                "Pickaxe": { "value": 1, "allowLethal": true }
+            },
+            "effects": [
+                {
+                    "value": "ceil(max(0, (a_attack + 3) * (1 - b_defense / 100)))",
+                    "targetSkill": "enemy",
+                    "targetStat": "health",
+                    "operator": "-"
+                }
+            ]
+        },
+        {
+            "name": "attackDesertEagle",
+            "cost": {
+                "DesertEagle": { "value": 1, "allowLethal": true }
+            },
+            "effects": [
+                {
+                    "value": "ceil(max(0, (a_attack + 7) * (1 - b_defense / 100)))",
+                    "targetSkill": "enemy",
+                    "targetStat": "health",
+                    "operator": "-"
+                }
+            ]
+        },
+        {
+            "name": "snakeGuard",
+            "effects": [
+                {
+                    "value": "ceil(a_level / 20)",
+                    "targetSkill": "self",
+                    "targetStat": "snakeShield",
+                    "operator": "+",
+                    "addStatus": {"nameStatus": "SnakeShield", "stacks": 1}
+                }
+            ]
+        },
+        {
+            "name": "attackBase",
+            "effects": [
+                {
+                    "value": "ceil(max(0, (a_attack) * (1 - b_defense / 100)))",
+                    "targetSkill": "enemy",
+                    "targetStat": "health",
+                    "operator": "-"
+                },
+                {
+                    "value": "1",
+                    "targetSkill": "enemy",
+                    "targetStat": "snakeShield",
+                    "operator": "-"
+                }
+            ]
+        },
+        {
+            "name": "attackSpecial",
+            "effects": [
+                {
+                    "value": "ceil(max(0, (a_attack + 11) * (1 - b_defense / 100)))",
+                    "targetSkill": "enemy",
+                    "targetStat": "health",
+                    "operator": "-"
+                },
+                {
+                    "value": "1",
+                    "targetSkill": "enemy",
+                    "targetStat": "snakeShield",
+                    "operator": "-"
+                }
+            ]
+        },
+        {
+            "name": "defend",
+            "effects": [
+                {
+                    "value": "0",
+                    "targetSkill": "self",
+                    "targetStat": "health",
+                    "operator": "+",
+                    "addStatus": {"nameStatus": "Guard", "stacks": 1}
+                }
+            ]
+        },
+        {
+            "name": "evasion",
+            "effects": [
+                {
+                    "value": "0",
+                    "targetSkill": "ally",
+                    "targetStat": "health",
+                    "operator": "+",
+                    "addStatus": {"nameStatus": "Evade", "stacks": 1}
+                }
+            ]
+        }
+    ],
+    "status":
+    [
+        {
+            "name": "KO",
+            "trigger": "onActionEnd",
+            "turns": -1,
+            "priority": 100,
+            "applyOnce": true,
+            "repelStatus": ["Guard", "Evade"],
+            "effects":
+            [{
+                "stat": "isTargetable",
+                "operator": "=",
+                "value": false
+            },
+            {
+                "stat": "canHaveTurns",
+                "operator": "=",
+                "value": false
+            }]
+        },
+        {
+            "name": "Guard",
+            "trigger": "onActionEnd",
+            "turns": 1,
+            "priority": 50,
+            "applyOnce": true,
+            "effects":
+            [{
+                "stat": "defense",
+                "operator": "+",
+                "value": 50
+            }]
+        },
+        {
+            "name": "Evade",
+            "trigger": "onActionEnd",
+            "turns": 1,
+            "priority": 100,
+            "applyOnce": true,
+            "effects":
+            [{
+                "stat": "defense",
+                "operator": "+",
+                "value": 99
+            }]
+        },
+        {
+            "name": "SnakeShield",
+            "trigger": "onActionEnd",
+            "turns": -1,
+            "priority": 50,
+            "applyOnce": true,
+            "effects":
+            [{
+                "stat": "defense",
+                "operator": "+",
+                "value": 50
+            }]
+        }
+    ],
+    "agent": [
+    { "agentName": "aggressiveSnake", "assignTo": "Snake", "behaviour": [
+        { "priority": 100, "chance": 100, "conditions": [], "action": "attackM4" },
+        { "priority": 0, "chance": 100, "conditions": [], "action": "attackUnharmed" }
+    ]},
+    { "agentName": "healingAgent", "assignTo": "", "behaviour": [
+        { "priority": 100, "chance": 100, "conditions": [{ "target": "allAllies", "stat": "health", "operator": "<", "value": 10 }], "action": "heal", "targetLook": "lowest", "targetStat": "health"},
+        { "priority": 0, "chance": 100, "conditions": [], "action": "attack", "targetLook": "lowest", "targetStat": "health"}
+    ]}
+]
+}

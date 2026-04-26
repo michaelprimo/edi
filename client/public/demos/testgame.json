@@ -1,7 +1,8 @@
 {
     "game": {
-        "name": "finalcombo",
+        "name": "testgame",
         "turns": 0,
+        "maxSimulationTurns": 999,
         "turnSystemMainStat": "speed"
     },
     "rules": [
@@ -17,7 +18,7 @@
             "effects": 
                 {
                     
-                    "applyStatus": "KO"
+                    "applyStatus": {"nameStatus": "KO", "stacks": 1}
                 }
             
             
@@ -72,6 +73,21 @@
                     "operator": "=",
                     "value": 30
                 }
+        },
+        {
+            "trigger": "onTurnStart",
+            "condition": {
+                "checkBattlerGroup": "player",
+                "stat": "snakeShield",
+                "operator": "<",
+                "value": 0
+            },
+            "effects": 
+                {
+                    "setStat": "snakeShield",
+                    "operator": "=",
+                    "value": 0
+                }
         }
 
     ],
@@ -86,9 +102,11 @@
                 "maxHealth": 10,
                 "mana": 10,
                 "attack": 4,
-                "speed": 100
+                "speed": 100,
+                "defense": 50,
+                "snakeShield": 0
             },
-            "skills": ["heal","attack", "bigAttack"],
+            "skills": ["attack", "bigAttack"],
             "status": []
         },
         {
@@ -101,7 +119,8 @@
                 "maxHealth": 10,
                 "mana": 10,
                 "attack": 2,
-                "speed": 10
+                "speed": 10,
+                "defense": 50
             },
             "skills": ["heal","attack"],
             "status": []
@@ -112,13 +131,14 @@
             "battlerType": "enemy",
             "targetType": "player",
             "stats": {
-                "health": 15,
+                "health": 50,
                 "maxHealth": 10,
                 "mana": 10,
                 "attack": 3,
-                "speed": 10
+                "speed": 10,
+                "defense": 0
             },
-            "skills": ["heal","bigAttack"],
+            "skills": ["evasion"],
             "status": []
         },
         {
@@ -127,13 +147,14 @@
             "battlerType": "enemy",
             "targetType": "player",
             "stats": {
-                "health": 15,
+                "health": 50,
                 "maxHealth": 10,
                 "mana": 10,
                 "attack": 3,
-                "speed": 10
+                "speed": 10,
+                "defense": 0
             },
-            "skills": ["heal","attack"],
+            "skills": ["evasion"],
             "status": []
         }
     ],
@@ -143,7 +164,7 @@
             "name": "attack",
             "effects": [
                 {
-                    "value": "a_attack * 4 - b_attack * 2",
+                    "value": "ceil(max(0, (a_attack * 4) * (1 - b_defense / 100)))",
                     "targetSkill": "enemy",
                     "targetStat": "health",
                     "operator": "-"
@@ -158,7 +179,7 @@
             },
             "effects": [
                 {
-                    "value": "a_attack * 6 - b_attack * 2",
+                    "value": "ceil(max(0, (a_attack * 6) * (1 - b_defense / 100)))",
                     "targetSkill": "enemy",
                     "targetStat": "health",
                     "operator": "-"
@@ -176,6 +197,42 @@
                     "targetSkill": "ally",
                     "targetStat": "health",
                     "operator": "+"
+                }
+            ]
+        },
+        {
+            "name": "snakeShield",
+            "effects": [
+                {
+                    "value": "0",
+                    "targetSkill": "ally",
+                    "targetStat": "health",
+                    "operator": "+",
+                    "addStatus": {"nameStatus": "SnakeShield", "stacks": 1}
+                }
+            ]
+        },
+        {
+            "name": "defend",
+            "effects": [
+                {
+                    "value": "0",
+                    "targetSkill": "ally",
+                    "targetStat": "health",
+                    "operator": "+",
+                    "addStatus": {"nameStatus": "Guard", "stacks": 2}
+                }
+            ]
+        },
+        {
+            "name": "evasion",
+            "effects": [
+                {
+                    "value": "0",
+                    "targetSkill": "ally",
+                    "targetStat": "health",
+                    "operator": "+",
+                    "addStatus": {"nameStatus": "Evade", "stacks": 2}
                 }
             ]
         },
@@ -204,7 +261,7 @@
             "turns": -1,
             "priority": 100,
             "applyOnce": true,
-            "repelStatus": ["Stun", "Regen", "Power+"],
+            "repelStatus": ["Guard", "Evade"],
             "effects":
             [{
                 "stat": "isTargetable",
@@ -239,6 +296,45 @@
             "effects":
             [{
                 "stat": "health",
+                "operator": "+",
+                "value": 1
+            }]
+        },
+        {
+            "name": "Guard",
+            "trigger": "onActionStart",
+            "turns": 1,
+            "priority": 50,
+            "applyOnce": true,
+            "effects":
+            [{
+                "stat": "defense",
+                "operator": "+",
+                "value": 50
+            }]
+        },
+        {
+            "name": "SnakeShield",
+            "trigger": "onDamageReceivedBefore",
+            "turns": -1,
+            "priority": 50,
+            "applyOnce": true,
+            "effects":
+            [{
+                "stat": "defense",
+                "operator": "+",
+                "value": 50
+            }]
+        },
+        {
+            "name": "Evade",
+            "trigger": "onActionEnd",
+            "turns": 1,
+            "priority": 100,
+            "applyOnce": true,
+            "effects":
+            [{
+                "stat": "defense",
                 "operator": "+",
                 "value": 1
             }]
