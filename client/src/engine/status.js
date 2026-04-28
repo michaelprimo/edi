@@ -44,6 +44,9 @@ export function checkStatus(data, battler, statusTrigger)
                                 }
                         }
 
+                        for(let y = 0; y < status.stacks; y++)
+                        {
+                            console.log("stacks: ", status.stacks, " y: ", y)
                             switch(status.effects[j].operator)
                             {
                                 case "+":
@@ -76,6 +79,8 @@ export function checkStatus(data, battler, statusTrigger)
                                     break;
                                 }
                             }  
+                        }
+                            
                         }
                     }
 

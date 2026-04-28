@@ -19,31 +19,39 @@ export default function Engine({ JSONData, simulations = 100, showLogs = false }
         for (let i = 0; i < simulations; i++)
         {
             let result = runEngine(JSONData);
-            
-            console.log("checkResults:", result);
-            if(result !== undefined)
+            if(result.checkRules === "draw")
             {
-                const winnersEntry = result.checkRules?.find(r => r.winners);
-                const losersEntry  = result.checkRules?.find(r => r.losers);
-    
-                if (winnersEntry)
-                {
-                    const winner = winnersEntry.winners[0].battlerType;
-                    winCount[winner] = (winCount[winner] || 0) + 1;
-                }
-    
-                if (losersEntry)
-                {
-                    const loser = losersEntry.losers[0].battlerType;
-                    loseCount[loser] = (loseCount[loser] || 0) + 1;
-                }
-    
-                allLogs.push(`Simulation ${i + 1}`, ...result.logs);
+                winCount["draw"] = (winCount["draw"] || 0) + 1;
+                allLogs.push(`Simulation ${i + 1}`, ...result.logs, "Draw. Simulation's turns exceeded the maximum allowed.");
             }
             else
             {
-                allLogs.push(`Simulation ${i + 1}`, "There are no winners");
+                console.log("checkResults:", result);
+                if(result !== undefined)
+                {
+                    const winnersEntry = result.checkRules?.find(r => r.winners);
+                    const losersEntry  = result.checkRules?.find(r => r.losers);
+        
+                    if (winnersEntry)
+                    {
+                        const winner = winnersEntry.winners[0].battlerType;
+                        winCount[winner] = (winCount[winner] || 0) + 1;
+                    }
+        
+                    if (losersEntry)
+                    {
+                        const loser = losersEntry.losers[0].battlerType;
+                        loseCount[loser] = (loseCount[loser] || 0) + 1;
+                    }
+        
+                    allLogs.push(`Simulation ${i + 1}`, ...result.logs);
+                }
+                else
+                {
+                    allLogs.push(`Simulation ${i + 1}`, "There are no winners");
+                }
             }
+            
         }
  
         // winrate calculation

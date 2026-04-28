@@ -2,7 +2,7 @@
     "game": {
         "name": "testgame",
         "turns": 0,
-        "maxSimulationTurns": 999,
+        "maxSimulationTurns": 99,
         "turnSystemMainStat": "speed"
     },
     "rules": [
@@ -63,21 +63,6 @@
             "trigger": "onTurnStart",
             "condition": {
                 "checkBattlerGroup": "player",
-                "stat": "health",
-                "operator": ">",
-                "value": 30
-            },
-            "effects": 
-                {
-                    "setStat": "health",
-                    "operator": "=",
-                    "value": 30
-                }
-        },
-        {
-            "trigger": "onTurnStart",
-            "condition": {
-                "checkBattlerGroup": "player",
                 "stat": "snakeShield",
                 "operator": "<",
                 "value": 0
@@ -98,15 +83,15 @@
             "targetType": "enemy",
             "inBattle": true,
             "stats": {
-                "health": 35,
+                "health": 350,
                 "maxHealth": 10,
                 "mana": 10,
                 "attack": 4,
                 "speed": 100,
-                "defense": 50,
+                "defense": 0,
                 "snakeShield": 0
             },
-            "skills": ["attack", "bigAttack"],
+            "skills": ["defend"],
             "status": []
         },
         {
@@ -138,7 +123,7 @@
                 "speed": 10,
                 "defense": 0
             },
-            "skills": ["evasion"],
+            "skills": ["attack"],
             "status": []
         },
         {
@@ -154,7 +139,7 @@
                 "speed": 10,
                 "defense": 0
             },
-            "skills": ["evasion"],
+            "skills": ["attack"],
             "status": []
         }
     ],
@@ -167,7 +152,8 @@
                     "value": "ceil(max(0, (a_attack * 4) * (1 - b_defense / 100)))",
                     "targetSkill": "enemy",
                     "targetStat": "health",
-                    "operator": "-"
+                    "operator": "-",
+                    "removeStatus": {"nameStatus": "Guard", "stacks": 3}
                 }
             ]
         },
@@ -208,7 +194,7 @@
                     "targetSkill": "ally",
                     "targetStat": "health",
                     "operator": "+",
-                    "addStatus": {"nameStatus": "SnakeShield", "stacks": 1}
+                    "applyStatus": {"nameStatus": "SnakeShield", "stacks": 1}
                 }
             ]
         },
@@ -220,7 +206,7 @@
                     "targetSkill": "ally",
                     "targetStat": "health",
                     "operator": "+",
-                    "addStatus": {"nameStatus": "Guard", "stacks": 2}
+                    "applyStatus": {"nameStatus": "Guard", "stacks": 5}
                 }
             ]
         },
@@ -232,7 +218,7 @@
                     "targetSkill": "ally",
                     "targetStat": "health",
                     "operator": "+",
-                    "addStatus": {"nameStatus": "Evade", "stacks": 2}
+                    "applyStatus": {"nameStatus": "Evade", "stacks": 2}
                 }
             ]
         },
@@ -303,14 +289,15 @@
         {
             "name": "Guard",
             "trigger": "onActionStart",
-            "turns": 1,
+            "turns": 2,
+            "maxStacks": 7,
             "priority": 50,
             "applyOnce": true,
             "effects":
             [{
                 "stat": "defense",
                 "operator": "+",
-                "value": 50
+                "value": 10
             }]
         },
         {

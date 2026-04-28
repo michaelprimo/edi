@@ -33,7 +33,6 @@ export function runEngine(JSONData)
         let statusInstance;
         let stopSimulation = false;
         
-        console.warn("trovare un altro modo per finire la simulazione che non sia 'data.game.turns <= 10' per forza");
         while((checkRules === undefined || checkRules === null) && data.game.turns <= data.game.maxSimulationTurns)
         {
             data.game.turns++;
@@ -77,12 +76,6 @@ export function runEngine(JSONData)
 
                                     let damageValueFromSkillFormula = getDamageValueFromFormula(selectedSkill.effects[k].value, currentBattlers[i], chooseTarget[j]);
 
-                                    /*
-                                    if()
-                                    {
-
-                                    }
-                                    */
                                     chooseTarget[j].stats[selectedSkill.effects[k].targetStat] = applySkillDamageFormula(chooseTarget[j].stats[selectedSkill.effects[k].targetStat], damageValueFromSkillFormula, selectedSkill.effects[k].operator);
                                     
                                     switch(selectedSkill.effects[k].operator)
@@ -103,28 +96,136 @@ export function runEngine(JSONData)
                                             break;
                                     }
                                     
-                                    if(selectedSkill.effects[k].addStatus)
+                                    const applyStatusEntries = selectedSkill.effects[k].applyStatus
+                                        ? (Array.isArray(selectedSkill.effects[k].applyStatus) ? selectedSkill.effects[k].applyStatus : [selectedSkill.effects[k].applyStatus])
+                                        : [];
+                                    if(applyStatusEntries.length > 0)
                                     {
                                         if (!chooseTarget[j].status) 
                                         {
                                             chooseTarget[j].status = [];
                                         }
-                                        
-                                        statusAddedFromSkill = data.status.find(chosenStatus => chosenStatus.name === selectedSkill.effects[k].addStatus.nameStatus);
-                                        
-                                        let checkIfStatusExists = chooseTarget[j].status.find(findStatus => findStatus.name === selectedSkill.effects[k].addStatus.nameStatus);
-                                        if(checkIfStatusExists === undefined)
+
+                                        for(const applyStatusEntryRaw of applyStatusEntries)
                                         {
-                                            statusInstance = structuredClone(statusAddedFromSkill);
-                                            statusInstance.stacks = selectedSkill.effects[k].addStatus.stacks;
-                                            chooseTarget[j].status.push(statusInstance);
+                                            const applyStatusEntry = typeof applyStatusEntryRaw === "string"
+                                                ? { nameStatus: applyStatusEntryRaw }
+                                                : applyStatusEntryRaw;
+                                            if(!applyStatusEntry?.nameStatus)
+                                            {
+                                                continue;
+                                            }
+
+                                            statusAddedFromSkill = data.status.find(chosenStatus => chosenStatus.name === applyStatusEntry.nameStatus);
+                                            if(!statusAddedFromSkill)
+                                            {
+                                                continue;
+                                            }
+
+                                            let checkIfStatusExists = chooseTarget[j].status.find(findStatus => findStatus.name === applyStatusEntry.nameStatus);
+                                            const stacksToAdd = applyStatusEntry.stacks ?? 1;
+                                            if(checkIfStatusExists === undefined)
+                                            {
+                                                statusInstance = structuredClone(statusAddedFromSkill);
+                                                if(!statusInstance.stacks)
+                                                {
+                                                    statusInstance.stacks = 0;
+                                                }
+                                                statusInstance.stacks += stacksToAdd;
+                                                
+                                                if(statusInstance.maxStacks !== undefined && statusInstance.stacks > statusInstance.maxStacks)
+                                                {
+                                                    statusInstance.stacks = statusInstance.maxStacks; 
+                                                }
+                                                chooseTarget[j].status.push(statusInstance);
+                                            }
+                                            else
+                                            {
+                                                if(!checkIfStatusExists.stacks)
+                                                {
+                                                    checkIfStatusExists.stacks = 0;
+                                                }
+
+                                                checkIfStatusExists.stacks += stacksToAdd;
+                                                if(checkIfStatusExists.maxStacks !== undefined && checkIfStatusExists.stacks > checkIfStatusExists.maxStacks)
+                                                {
+                                                    checkIfStatusExists.stacks = checkIfStatusExists.maxStacks;
+                                                }
+
+                                                if(statusAddedFromSkill.turns !== undefined && statusAddedFromSkill.turns >= 0)
+                                                {
+                                                    checkIfStatusExists.turns = statusAddedFromSkill.turns;
+                                                }
+                                            }
                                         }
                                     } 
+
+                                    const removeStatusEntries = selectedSkill.effects[k].removeStatus
+                                        ? (Array.isArray(selectedSkill.effects[k].removeStatus) ? selectedSkill.effects[k].removeStatus : [selectedSkill.effects[k].removeStatus])
+                                        : [];
+                                    if(removeStatusEntries.length > 0)
+                                    {
+                                        if(!chooseTarget[j].status || chooseTarget[j].status.length === 0)
+                                        {
+                                            continue;
+                                        }
+
+                                        for(const removeStatusEntryRaw of removeStatusEntries)
+                                        {
+                                            let removeStatusName;
+                                            let stacksToRemove;
+
+                                            if(typeof removeStatusEntryRaw === "string")
+                                            {
+                                                removeStatusName = removeStatusEntryRaw;
+                                            }
+                                            else
+                                            {
+                                                removeStatusName = removeStatusEntryRaw?.nameStatus;
+                                                stacksToRemove = removeStatusEntryRaw?.stacks;
+                                            }
+
+                                            if(!removeStatusName)
+                                            {
+                                                continue;
+                                            }
+
+                                            const statusToRemove = chooseTarget[j].status.find(findStatus => findStatus.name === removeStatusName);
+                                            if(!statusToRemove)
+                                            {
+                                                continue;
+                                            }
+
+                                            // If stacks are not provided, remove the whole status.
+                                            if(stacksToRemove === undefined || stacksToRemove === null)
+                                            {
+                                                chooseTarget[j].status = chooseTarget[j].status.filter(s => s.name !== removeStatusName);
+                                            }
+                                            else
+                                            {
+                                                if(!statusToRemove.stacks)
+                                                {
+                                                    statusToRemove.stacks = 0;
+                                                }
+
+                                                statusToRemove.stacks -= stacksToRemove;
+                                                if(statusToRemove.stacks <= 0)
+                                                {
+                                                    chooseTarget[j].status = chooseTarget[j].status.filter(s => s.name !== removeStatusName);
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                                 
                             }
                         }
                         checkRules = triggerActions(data, currentBattlers,  "onActionEnd");
+                        if(data.game.turns >= data.game.maxSimulationTurns)
+                        {
+                            checkRules = "draw";
+                            return { checkRules, logs: logger.getLogs() };
+                        }
                         if(checkRules !== null)
                         {
                             console.log("checkRules: ", checkRules);

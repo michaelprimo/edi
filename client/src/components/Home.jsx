@@ -14,7 +14,7 @@ const Home = () => {
     const [demoData, setDemoData] = useState(null);
     const [selectedDemo, setSelectedDemo] = useState(DEMO_LIST[0].path);
     const [customFileName, setCustomFileName] = useState(null);
-    const [simulations, setSimulations] = useState(100);
+    const [simulations, setSimulations] = useState(5);
     const [showLogs, setShowLogs] = useState(false);
 
     // Flow management states
