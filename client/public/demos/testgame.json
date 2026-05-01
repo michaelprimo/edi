@@ -89,28 +89,28 @@
             "targetType": "enemy",
             "inBattle": true,
             "stats": {
-                "health": 10,
+                "health": 100,
                 "maxHealth": 10,
                 "mana": 10,
                 "attack": 2,
                 "speed": 10,
                 "defense": 50
             },
-            "skills": ["heal"],
+            "skills": ["attack"],
             "status": []
         },
         {
             "name": "C",
+            "characterType": "player",
+            "targetType": "enemy",
             "inBattle": true,
-            "characterType": "enemy",
-            "targetType": "player",
             "stats": {
-                "health": 50,
+                "health": 100,
                 "maxHealth": 10,
                 "mana": 10,
-                "attack": 3,
+                "attack": 2,
                 "speed": 10,
-                "defense": 0
+                "defense": 50
             },
             "skills": ["attack"],
             "status": []
@@ -128,7 +128,71 @@
                 "speed": 10,
                 "defense": 0
             },
-            "skills": ["heal"],
+            "skills": ["attack"],
+            "status": []
+        },
+        {
+            "name": "E",
+            "inBattle": true,
+            "characterType": "enemy",
+            "targetType": "player",
+            "stats": {
+                "health": 50,
+                "maxHealth": 10,
+                "mana": 10,
+                "attack": 3,
+                "speed": 10,
+                "defense": 0
+            },
+            "skills": ["attack"],
+            "status": []
+        },
+        {
+            "name": "F",
+            "inBattle": true,
+            "characterType": "enemy",
+            "targetType": "player",
+            "stats": {
+                "health": 50,
+                "maxHealth": 10,
+                "mana": 10,
+                "attack": 3,
+                "speed": 10,
+                "defense": 0
+            },
+            "skills": ["attack"],
+            "status": []
+        },
+        {
+            "name": "G",
+            "inBattle": true,
+            "characterType": "obstacle",
+            "targetType": "player",
+            "stats": {
+                "health": 50,
+                "maxHealth": 10,
+                "mana": 10,
+                "attack": 3,
+                "speed": 10,
+                "defense": 0
+            },
+            "skills": [],
+            "status": []
+        },
+        {
+            "name": "H",
+            "inBattle": true,
+            "characterType": "obstacle",
+            "targetType": "enemy",
+            "stats": {
+                "health": 50,
+                "maxHealth": 10,
+                "mana": 10,
+                "attack": 3,
+                "speed": 10,
+                "defense": 0
+            },
+            "skills": [],
             "status": []
         }
     ],
@@ -139,7 +203,7 @@
             "effects": [
                 {
                     "value": "ceil(max(0, (a_attack * 4) * (1 - b_defense / 100)))",
-                    "targetSkill": "all",
+                    "targetSkill": "allTargets",
                     "targetStat": "health",
                     "operator": "-"
                 }

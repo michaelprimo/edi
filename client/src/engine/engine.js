@@ -74,6 +74,7 @@ export function runEngine(JSONData)
                     //apply the effect for each target
                     for(let j = 0; j < chooseTarget.length; j++)
                     {
+                        console.log("length: ", chooseTarget.length);
                         if(chooseTarget[j] === undefined) continue;
 
                         //apply each skill effect on the target

@@ -1,67 +1,84 @@
 import { putAllTargetsOfAllSkillEffectsOnArray } from './skills.js';
 
-export function getTargetForSkill(currentCharacters, character, selectedSkill) {
+function isValidTarget(character, selectedSkill)
+{
+    if(selectedSkill.targetOnlyWithStatus)
+    {
+        return selectedSkill.targetOnlyWithStatus.some(s => character.status.some(characterStatus => characterStatus.name === s));
+    }
+    return character.stats.isTargetable === true;
+}
 
-    let targetType = putAllTargetsOfAllSkillEffectsOnArray(selectedSkill);
-    const sortedcharacters = [...currentCharacters].sort((a, b) => a.id - b.id);
-    let targetcharacters = [];
+function getRandomTarget(array)
+{
+    if(array.length === 0) return [];
+    return [array[Math.floor(Math.random() * array.length)]];
+}
 
-    targetType.forEach(type => {
+export function getTargetForSkill(currentCharacters, character, selectedSkill)
+{
+    const targetTypes = putAllTargetsOfAllSkillEffectsOnArray(selectedSkill);
+    const getOpponentTargets = currentCharacters.filter(c => c.characterType === character.targetType && isValidTarget(c, selectedSkill));
+    const getFriendlyTargets = currentCharacters.filter(c => c.characterType === character.characterType && isValidTarget(c, selectedSkill));
+    const getFriendlyTargetsExceptSelf = currentCharacters.filter(c => c.characterType === character.characterType && c !== character && isValidTarget(c, selectedSkill));
+    const getOtherTargets = currentCharacters.filter(c => c.characterType !== character.characterType && isValidTarget(c, selectedSkill));
+    let targetCharacters = [];
+
+    targetTypes.forEach(type =>
+    {
         switch(type)
         {
             case "all":
-                targetcharacters = currentCharacters;
+            {
+                const getEveryTarget = currentCharacters.filter(b => isValidTarget(b, selectedSkill));
+                targetCharacters = [ ...getEveryTarget];
                 break;
-
+            }
+            case "allyExceptSelf":
+            {
+                targetCharacters = [ ...getFriendlyTargetsExceptSelf];
+                break;
+            }
             case "allEnemies":
-                targetcharacters = [...targetcharacters, ...sortedcharacters.filter(b => 
-                    b.characterType === character.targetType && 
-                    (selectedSkill.targetOnlyWithStatus ? selectedSkill.targetOnlyWithStatus.some(s => b.status.some(bs => bs.name === s)) : b.stats.isTargetable === true)
-                )];
+            {
+                targetCharacters = [ ...getOpponentTargets];
                 break;
-
+            }
             case "enemy":
-                targetcharacters = [...targetcharacters, sortedcharacters.find(b => 
-                    b.characterType === character.targetType && 
-                    (selectedSkill.targetOnlyWithStatus ? selectedSkill.targetOnlyWithStatus.some(s => b.status.some(bs => bs.name === s)) : b.stats.isTargetable === true)
-                )].filter(Boolean);
+            {
+                targetCharacters = [ ...getRandomTarget(getOpponentTargets)];
                 break;
-
+            }
             case "allTargets":
-                targetcharacters = [...targetcharacters, ...sortedcharacters.filter(b => 
-                    b.characterType !== character.characterType && 
-                    (selectedSkill.targetOnlyWithStatus ? selectedSkill.targetOnlyWithStatus.some(s => b.status.some(bs => bs.name === s)) : b.stats.isTargetable === true)
-                )];
+            {
+                
+                targetCharacters = [...targetCharacters, ...getOtherTargets];
                 break;
-
+            }
             case "target":
-                targetcharacters = [...targetcharacters, sortedcharacters.find(b => 
-                    b.characterType !== character.characterType && 
-                    (selectedSkill.targetOnlyWithStatus ? selectedSkill.targetOnlyWithStatus.some(s => b.status.some(bs => bs.name === s)) : b.stats.isTargetable === true)
-                )].filter(Boolean);
+            {
+                targetCharacters = [...targetCharacters, ...getRandomTarget(getOtherTargets)];
                 break;
-
+            }
             case "allAllies":
-                targetcharacters = [...targetcharacters, ...sortedcharacters.filter(b => 
-                    b.characterType === character.characterType && 
-                    (selectedSkill.targetOnlyWithStatus ? selectedSkill.targetOnlyWithStatus.some(s => b.status.some(bs => bs.name === s)) : b.stats.isTargetable === true)
-                )];
+            {
+                targetCharacters = [...targetCharacters, ...getFriendlyTargets];
                 break;
-
+            }
             case "ally":
-                targetcharacters = [...targetcharacters, sortedcharacters.find(b => 
-                    b.characterType === character.characterType && 
-                    (selectedSkill.targetOnlyWithStatus ? selectedSkill.targetOnlyWithStatus.some(s => b.status.some(bs => bs.name === s)) : b.stats.isTargetable === true)
-                )].filter(Boolean);
+            {
+                targetCharacters = [...targetCharacters, ...getRandomTarget(getFriendlyTargets)];
                 break;
-
+            }
             case "self":
-                targetcharacters = [...targetcharacters, character];
+            {
+                targetCharacters = [...targetCharacters, character];
                 break;
+            }
         }
     });
 
-    return targetcharacters;
+    return targetCharacters;
 }
 //character, chooseTarget, currentCharacters
 export function resolveStatusTargets(targetMode, character, chooseTarget, currentCharacters)
