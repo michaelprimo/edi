@@ -32,3 +32,31 @@ export function applySkillDamageFormula(defenderTargetStat, damageValueFromFormu
     }
     
 }
+
+export function calculateSkillEffect(selectedSkill, logger, chooseTarget, currentCharacters)
+{
+    //get the value from the skill to use for healing or damaging the target's resources
+    const damageValueFromSkillFormula = getDamageValueFromFormula(selectedSkill.value, currentCharacters, chooseTarget);
+
+    //manipulate the results with the data and the Math.js formula
+    chooseTarget.stats[selectedSkill.targetStat] =
+        applySkillDamageFormula(chooseTarget.stats[selectedSkill.targetStat], damageValueFromSkillFormula, selectedSkill.operator);
+
+    switch(selectedSkill.operator)
+    {
+        case "+":
+            logger.log("damageHealedWithSkill", {
+                "targetName": chooseTarget.name,
+                "damageAmount": damageValueFromSkillFormula
+            });
+            break;
+        case "-":
+            logger.log("damageDealtWithSkill", {
+                "targetName": chooseTarget.name,
+                "damageAmount": damageValueFromSkillFormula
+            });
+            break;
+        default:
+            break;
+    }
+}

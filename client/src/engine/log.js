@@ -23,18 +23,18 @@ function logDictionary(actionDictionary, actionValues)
             return `OH NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO `;
         case "showTurns":
             return `TURNO ${actionValues.numberOfTurnsPassed}`;
-        case "battlerTurnStart":
-            return `Ora è il turno di ${actionValues.battlerName}! Stats: ${structuredClone(actionValues.battlerStats)} Status: Stats: ${structuredClone(actionValues.battlerStatus)}`;
+        case "characterTurnStart":
+            return `Ora è il turno di ${actionValues.characterName}! Stats: ${structuredClone(actionValues.characterstats)} Status: Stats: ${structuredClone(actionValues.characterstatus)}`;
         case "skillUse":
-            return `${actionValues.battlerName} usa ${actionValues.battlerSkillName}!`;
+            return `${actionValues.characterName} usa ${actionValues.characterskillName}!`;
         case "damageDealtWithSkill":
             return `${actionValues.targetName} ha subito ${actionValues.damageAmount} danni!`;
         case "damageHealedWithSkill":
             return `${actionValues.targetName} si è curato di ${actionValues.damageAmount}!`;
         case "noTargets":
-            return `${actionValues.battlerName} non può usare skills a causa della mancanza di target!`;
+            return `${actionValues.characterName} non può usare skills a causa della mancanza di target!`;
         case "noResources":
-            return `${actionValues.battlerName} non può usare skills a causa della mancanza di risorse!`;
+            return `${actionValues.characterName} non può usare skills a causa della mancanza di risorse!`;
         case "declareWinners":
             return `${actionValues.winners} è il gruppo vincente!`;
         case "declareLosers":

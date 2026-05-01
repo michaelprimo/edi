@@ -1,66 +1,98 @@
-import { putAllSkillEffectsOnArray } from './skills.js';
+import { putAllTargetsOfAllSkillEffectsOnArray } from './skills.js';
 
-export function getTargetForSkill(currentBattlers, current, selectedSkill) {
+export function getTargetForSkill(currentCharacters, character, selectedSkill) {
 
-    let targetType = putAllSkillEffectsOnArray(selectedSkill);
-    console.log("targetType:", targetType);
-    const sortedBattlers = [...currentBattlers].sort((a, b) => a.id - b.id);
-    let targetBattlers = [];
+    let targetType = putAllTargetsOfAllSkillEffectsOnArray(selectedSkill);
+    const sortedcharacters = [...currentCharacters].sort((a, b) => a.id - b.id);
+    let targetcharacters = [];
 
     targetType.forEach(type => {
         switch(type)
         {
             case "all":
-                targetBattlers = [...targetBattlers, ...sortedBattlers];
+                targetcharacters = currentCharacters;
                 break;
 
             case "allEnemies":
-                targetBattlers = [...targetBattlers, ...sortedBattlers.filter(b => 
-                    b.battlerType === current.targetType && 
+                targetcharacters = [...targetcharacters, ...sortedcharacters.filter(b => 
+                    b.characterType === character.targetType && 
                     (selectedSkill.targetOnlyWithStatus ? selectedSkill.targetOnlyWithStatus.some(s => b.status.some(bs => bs.name === s)) : b.stats.isTargetable === true)
                 )];
                 break;
 
             case "enemy":
-                targetBattlers = [...targetBattlers, sortedBattlers.find(b => 
-                    b.battlerType === current.targetType && 
+                targetcharacters = [...targetcharacters, sortedcharacters.find(b => 
+                    b.characterType === character.targetType && 
                     (selectedSkill.targetOnlyWithStatus ? selectedSkill.targetOnlyWithStatus.some(s => b.status.some(bs => bs.name === s)) : b.stats.isTargetable === true)
                 )].filter(Boolean);
                 break;
 
             case "allTargets":
-                targetBattlers = [...targetBattlers, ...sortedBattlers.filter(b => 
-                    b.battlerType !== current.battlerType && 
+                targetcharacters = [...targetcharacters, ...sortedcharacters.filter(b => 
+                    b.characterType !== character.characterType && 
                     (selectedSkill.targetOnlyWithStatus ? selectedSkill.targetOnlyWithStatus.some(s => b.status.some(bs => bs.name === s)) : b.stats.isTargetable === true)
                 )];
                 break;
 
             case "target":
-                targetBattlers = [...targetBattlers, sortedBattlers.find(b => 
-                    b.battlerType !== current.battlerType && 
+                targetcharacters = [...targetcharacters, sortedcharacters.find(b => 
+                    b.characterType !== character.characterType && 
                     (selectedSkill.targetOnlyWithStatus ? selectedSkill.targetOnlyWithStatus.some(s => b.status.some(bs => bs.name === s)) : b.stats.isTargetable === true)
                 )].filter(Boolean);
                 break;
 
             case "allAllies":
-                targetBattlers = [...targetBattlers, ...sortedBattlers.filter(b => 
-                    b.battlerType === current.battlerType && 
+                targetcharacters = [...targetcharacters, ...sortedcharacters.filter(b => 
+                    b.characterType === character.characterType && 
                     (selectedSkill.targetOnlyWithStatus ? selectedSkill.targetOnlyWithStatus.some(s => b.status.some(bs => bs.name === s)) : b.stats.isTargetable === true)
                 )];
                 break;
 
             case "ally":
-                targetBattlers = [...targetBattlers, sortedBattlers.find(b => 
-                    b.battlerType === current.battlerType && 
+                targetcharacters = [...targetcharacters, sortedcharacters.find(b => 
+                    b.characterType === character.characterType && 
                     (selectedSkill.targetOnlyWithStatus ? selectedSkill.targetOnlyWithStatus.some(s => b.status.some(bs => bs.name === s)) : b.stats.isTargetable === true)
                 )].filter(Boolean);
                 break;
 
             case "self":
-                targetBattlers = [...targetBattlers, current];
+                targetcharacters = [...targetcharacters, character];
                 break;
         }
     });
 
-    return targetBattlers;
+    return targetcharacters;
+}
+//character, chooseTarget, currentCharacters
+export function resolveStatusTargets(targetMode, character, chooseTarget, currentCharacters)
+{
+    if(!character) return [];
+
+    const roster = currentCharacters ?? [];
+    const firstBy = (predicate) => roster.find(predicate);
+    const allBy = (predicate) => roster.filter(predicate);
+    const isTargetable = (character) => character?.stats?.isTargetable === true;
+
+    switch(targetMode)
+    {
+        case "self":
+            return [character];
+        case "ally":
+            return [firstBy(b => b.characterType === character.characterType && isTargetable(b))].filter(Boolean);
+        case "allAllies":
+            return allBy(b => b.characterType === character.characterType && isTargetable(b));
+        case "enemy":
+            return [firstBy(b => b.characterType === character.targetType && isTargetable(b))].filter(Boolean);
+        case "allEnemies":
+            return allBy(b => b.characterType === character.targetType && isTargetable(b));
+        case "target":
+            return [firstBy(b => b.characterType !== character.characterType && isTargetable(b))].filter(Boolean);
+        case "allTargets":
+            return allBy(b => b.characterType !== character.characterType && isTargetable(b));
+        case "all":
+            return roster;
+        case "skillTarget":
+        default:
+            return chooseTarget ? [chooseTarget] : [];
+    }
 }

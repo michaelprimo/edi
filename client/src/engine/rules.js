@@ -1,4 +1,4 @@
-export function checkRuleCondition(data, battlerData, ruleTrigger) {
+export function checkRuleCondition(data, characterData, ruleTrigger) {
     
     
     let checkStatusResults = [];
@@ -11,87 +11,87 @@ export function checkRuleCondition(data, battlerData, ruleTrigger) {
         if(rule.condition.stat) {
             const { stat, operator, value } = rule.condition;
             switch(operator) {
-                case "=":  ruleResults = battlerData.filter(b => b.stats[stat] == value); break;
-                case "<":  ruleResults = battlerData.filter(b => b.stats[stat] < value); break;
-                case ">":  ruleResults = battlerData.filter(b => b.stats[stat] > value); break;
-                case ">=": ruleResults = battlerData.filter(b => b.stats[stat] >= value); break;
-                case "<=": ruleResults = battlerData.filter(b => b.stats[stat] <= value); break;
+                case "=":  ruleResults = characterData.filter(b => b.stats[stat] == value); break;
+                case "<":  ruleResults = characterData.filter(b => b.stats[stat] < value); break;
+                case ">":  ruleResults = characterData.filter(b => b.stats[stat] > value); break;
+                case ">=": ruleResults = characterData.filter(b => b.stats[stat] >= value); break;
+                case "<=": ruleResults = characterData.filter(b => b.stats[stat] <= value); break;
                 default: ruleResults = [];
             }
         }
 
         // Tipo 2: condizione su status
         if(rule.condition.haveStatus) {
-            ruleResults = battlerData.filter(b => 
+            ruleResults = characterData.filter(b => 
                 b.status.some(s => s.name === rule.condition.haveStatus)
             );
             
             
-            checkStatusResults = ruleResults.filter(s => s.battlerType === rule.condition.checkBattlerGroup);
-            const groupBattlers = battlerData.filter(s => s.battlerType === rule.condition.checkBattlerGroup);
+            checkStatusResults = ruleResults.filter(s => s.characterType === rule.condition.checkCharacterGroup);
+            const groupcharacters = characterData.filter(s => s.characterType === rule.condition.checkCharacterGroup);
 
-            if(checkStatusResults.length === groupBattlers.length && checkStatusResults.every(b => groupBattlers.some(g => g.id === b.id)))
+            if(checkStatusResults.length === groupcharacters.length && checkStatusResults.every(b => groupcharacters.some(g => g.id === b.id)))
             {
                 if(rule.effects.declareWinnerGroup)
                 {
-                    setSimulationResults.push({"winners": battlerData.filter(s => s.battlerType === rule.effects.declareWinnerGroup)});
+                    setSimulationResults.push({"winners": characterData.filter(s => s.characterType === rule.effects.declareWinnerGroup)});
                 }
                 if(rule.effects.declareLoserGroup)
                 {
-                    setSimulationResults.push({"losers": battlerData.filter(s => s.battlerType === rule.effects.declareLoserGroup)});
+                    setSimulationResults.push({"losers": characterData.filter(s => s.characterType === rule.effects.declareLoserGroup)});
                 }
             }
             
         }
         
         if(rule.effects.applyStatus) {
-            ruleResults.forEach(battler => 
+            ruleResults.forEach(character => 
                 {
-                const hasStatus = battler.status.some(s => s.name === rule.effects.applyStatus.nameStatus);
+                const hasStatus = character.status.some(s => s.name === rule.effects.applyStatus.nameStatus);
                 
                 if(!hasStatus) 
                 {
                     const getStatus = data.status.find(s => s.name === rule.effects.applyStatus.nameStatus);
                     const clonedStatus = structuredClone(getStatus);
                     clonedStatus.stacks = rule.effects.applyStatus.stacks;
-                    battler.status.push(clonedStatus);
+                    character.status.push(clonedStatus);
                     
                 }
             });
         }
 
         if(rule.effects.removeStatus) {
-            ruleResults.forEach(battler => 
+            ruleResults.forEach(character => 
                 {
-                const hasStatus = battler.status.some(s => s.name === rule.effects.removeStatus);
+                const hasStatus = character.status.some(s => s.name === rule.effects.removeStatus);
                 
                 if(hasStatus) 
                 {
                     const getStatus = data.status.find(s => s.name === rule.effects.removeStatus);
-                    battler.status = battler.status.filter(s => s.name !== rule.effects.removeStatus);
+                    character.status = character.status.filter(s => s.name !== rule.effects.removeStatus);
                 }
             });
         }
 
         if(rule.effects.setStat)
         {
-            let battlerStatData = battlerData.filter(b => b.battlerType === rule.condition.checkBattlerGroup);
+            let characterstatData = characterData.filter(b => b.characterType === rule.condition.checkCharacterGroup);
             const effects = rule.effects;
             const condition = rule.condition;
-            let isRuleConditionRespected = checkifRuleConditionIsRespected(battlerStatData, condition);
+            let isRuleConditionRespected = checkifRuleConditionIsRespected(characterstatData, condition);
 
             if(isRuleConditionRespected === true)
             {
-                battlerStatData.forEach(battler => 
+                characterstatData.forEach(character => 
                 {
                 switch(effects.operator) 
                 {
-                    case "=":  battler.stats[effects.setStat] = effects.value; break;
-                    case "+":  battler.stats[effects.setStat] += effects.value; break;
-                    case "-":  battler.stats[effects.setStat] -= effects.value; break;
-                    case "*": battler.stats[effects.setStat] *= effects.value; break;
-                    case "/": battler.stats[effects.setStat] /= effects.value; break;
-                    default: battler.stats[effects.setStat] = effects.value;
+                    case "=":  character.stats[effects.setStat] = effects.value; break;
+                    case "+":  character.stats[effects.setStat] += effects.value; break;
+                    case "-":  character.stats[effects.setStat] -= effects.value; break;
+                    case "*": character.stats[effects.setStat] *= effects.value; break;
+                    case "/": character.stats[effects.setStat] /= effects.value; break;
+                    default: character.stats[effects.setStat] = effects.value;
                 }
                 });
             }
@@ -100,7 +100,7 @@ export function checkRuleCondition(data, battlerData, ruleTrigger) {
     
     if(setSimulationResults.length > 0)
     {
-        console.log("setSimulationResults: ", setSimulationResults)
+        
         return setSimulationResults;
     }
     else 
@@ -109,10 +109,10 @@ export function checkRuleCondition(data, battlerData, ruleTrigger) {
     }
 }
 
-function checkifRuleConditionIsRespected(battlerStatData, condition)
+function checkifRuleConditionIsRespected(characterstatData, condition)
 {
-    return battlerStatData.some(battler => {
-        const statValue = battler.stats[condition.stat];
+    return characterstatData.some(character => {
+        const statValue = character.stats[condition.stat];
 
         switch(condition.operator)
         {

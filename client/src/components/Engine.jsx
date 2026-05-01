@@ -26,7 +26,7 @@ export default function Engine({ JSONData, simulations = 100, showLogs = false }
             }
             else
             {
-                console.log("checkResults:", result);
+                
                 if(result !== undefined)
                 {
                     const winnersEntry = result.checkRules?.find(r => r.winners);
@@ -34,13 +34,13 @@ export default function Engine({ JSONData, simulations = 100, showLogs = false }
         
                     if (winnersEntry)
                     {
-                        const winner = winnersEntry.winners[0].battlerType;
+                        const winner = winnersEntry.winners[0].characterType;
                         winCount[winner] = (winCount[winner] || 0) + 1;
                     }
         
                     if (losersEntry)
                     {
-                        const loser = losersEntry.losers[0].battlerType;
+                        const loser = losersEntry.losers[0].characterType;
                         loseCount[loser] = (loseCount[loser] || 0) + 1;
                     }
         

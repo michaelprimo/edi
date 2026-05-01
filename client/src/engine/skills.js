@@ -1,12 +1,12 @@
 import { chooseSkill } from './agent.js';
 
-function getUsableSkills(battler)
+function getUsableSkills(character)
 {
-    return battler.skills.filter(skill => {
+    return character.skills.filter(skill => {
         if (!skill.cost) return true;
 
         return Object.keys(skill.cost).every(resource => {
-            const stat = battler.stats[resource];
+            const stat = character.stats[resource];
             const costData = skill.cost[resource];
             const cost = costData.value;
 
@@ -20,11 +20,11 @@ function getUsableSkills(battler)
     });
 }
 
-export function getSkilltoUse(battler, currentBattlers) 
+export function getSkilltoUse(character, currentCharacters) 
     {
         let idSkill;
-        let availableSkills = getUsableSkills(battler);
-        idSkill = chooseSkill(availableSkills, battler, currentBattlers);
+        let availableSkills = getUsableSkills(character);
+        idSkill = chooseSkill(availableSkills, character, currentCharacters);
         let skillSelected = availableSkills.find(id => id.id === idSkill);
 
         if (skillSelected && skillSelected.effects && skillSelected.effects.length > 0) 
@@ -34,7 +34,7 @@ export function getSkilltoUse(battler, currentBattlers)
                 let getallNameofCostResources = Object.keys(skillSelected.cost);
                 for(let i = 0; i<getallNameofCostResources.length;i++)
                 {
-                    battler.stats[getallNameofCostResources[i]] -= skillSelected.cost[getallNameofCostResources[i]].value;
+                    character.stats[getallNameofCostResources[i]] -= skillSelected.cost[getallNameofCostResources[i]].value;
                 }
             }
             
@@ -44,12 +44,7 @@ export function getSkilltoUse(battler, currentBattlers)
         return undefined; 
     }
 
-export function putAllSkillEffectsOnArray(selectedSkill)
+export function putAllTargetsOfAllSkillEffectsOnArray(selectedSkill)
 {
-    let getAllSkillEffects = [];
-    selectedSkill.effects.forEach(effect => 
-    {
-        getAllSkillEffects.push(effect.targetSkill);
-    })
-    return [...new Set(getAllSkillEffects)];
+    return [...new Set(selectedSkill.effects.map(e => e.targetSkill))];
 }

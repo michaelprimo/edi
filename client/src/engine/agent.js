@@ -1,14 +1,14 @@
 import * as math from 'mathjs';
-//import { putAllSkillEffectsOnArray } from './skills.js';
+//import { putAllTargetsOfAllSkillEffectsOnArray } from './skills.js';
 
-export function chooseSkill(availableSkills, battler, currentBattlers) 
+export function chooseSkill(availableSkills, character, currentCharacters) 
 {
     
 
     
-    if(battler.agent)
+    if(character.agent)
     {
-        let sortAgentRules = [...battler.agent].sort((a, b) => b.priority - a.priority);
+        let sortAgentRules = [...character.agent].sort((a, b) => b.priority - a.priority);
         let skillChosenID;
         let confirmSkillExists;
 
@@ -19,7 +19,7 @@ export function chooseSkill(availableSkills, battler, currentBattlers)
 
             if(confirmSkillExists)
             {
-                skillChosenID = checkActionsfromPriority(sortAgentRules[i], battler, currentBattlers, availableSkills);
+                skillChosenID = checkActionsfromPriority(sortAgentRules[i], character, currentCharacters, availableSkills);
                 if(skillChosenID >= 0)
                 {
                     i = sortAgentRules.length;
@@ -52,7 +52,7 @@ function callRandomSkill(availableSkills)
 }
 
 
-function checkActionsfromPriority(rule, battler, currentBattlers, availableSkills)
+function checkActionsfromPriority(rule, character, currentCharacters, availableSkills)
 {
      
     
@@ -62,7 +62,7 @@ function checkActionsfromPriority(rule, battler, currentBattlers, availableSkill
     if(rolld100 <= rule.chance)
     {
         
-        actionChecked = checkActionsFromConditions(rule,battler,currentBattlers);
+        actionChecked = checkActionsFromConditions(rule,character,currentCharacters);
         
         if(actionChecked === true || actionChecked === undefined)
         {
@@ -77,7 +77,7 @@ function checkActionsfromPriority(rule, battler, currentBattlers, availableSkill
     }
 }
 
-function checkActionsFromConditions(rule, battler, currentBattlers)
+function checkActionsFromConditions(rule, character, currentCharacters)
 {
     if (!rule.conditions || rule.conditions.length === 0) {
         return true;
@@ -89,37 +89,37 @@ function checkActionsFromConditions(rule, battler, currentBattlers)
         switch (target)
         {
             case "self":
-                return checkStatValue(operator, battler.stats[stat], value);
+                return checkStatValue(operator, character.stats[stat], value);
 
             case "all":
-                return currentBattlers.every(b => 
+                return currentCharacters.every(b => 
                     checkStatValue(operator, b.stats[stat], value)
                 );
 
             case "allEnemies":
-                return currentBattlers
-                    .filter(b => b.battlerType === battler.targetType)
+                return currentCharacters
+                    .filter(b => b.characterType === character.targetType)
                     .every(b => checkStatValue(operator, b.stats[stat], value));
 
             case "enemy":
-                return currentBattlers
-                    .filter(b => b.battlerType === battler.targetType)
+                return currentCharacters
+                    .filter(b => b.characterType === character.targetType)
                     .some(b => checkStatValue(operator, b.stats[stat], value));
 
             case "allAllies":
-                return currentBattlers
-                    .filter(b => b.battlerType === battler.battlerType && b !== battler)
+                return currentCharacters
+                    .filter(b => b.characterType === character.characterType && b !== character)
                     .every(b => checkStatValue(operator, b.stats[stat], value));
 
             case "ally":
-                return currentBattlers
-                    .filter(b => b.battlerType === battler.battlerType && b !== battler)
+                return currentCharacters
+                    .filter(b => b.characterType === character.characterType && b !== character)
                     .some(b => checkStatValue(operator, b.stats[stat], value));
 
             case "target":
             case "allTargets":
-                return currentBattlers
-                    .filter(b => b.battlerType === battler.targetType)
+                return currentCharacters
+                    .filter(b => b.characterType === character.targetType)
                     .some(b => checkStatValue(operator, b.stats[stat], value));
 
             default:

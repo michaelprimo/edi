@@ -10,7 +10,7 @@
             "trigger": "onActionEnd",
             
             "condition": {
-                "checkCharacterGroup": "all",
+                "checkBattlerGroup": "all",
                 "stat": "health",
                 "operator": "<=",
                 "value": 0
@@ -26,7 +26,7 @@
         {
             "trigger": "onActionEnd",
             "condition": {
-                "checkCharacterGroup": "player",
+                "checkBattlerGroup": "player",
                 "haveStatus": "KO"
             },
             "effects": 
@@ -38,7 +38,7 @@
          {
             "trigger": "onActionEnd",
             "condition": {
-                "checkCharacterGroup": "enemy",
+                "checkBattlerGroup": "enemy",
                 "haveStatus": "KO"
             },
             "effects": 
@@ -51,7 +51,18 @@
         {
             "trigger": "onTurnStart",
             "condition": {
-                "checkCharacterGroup": "player",
+                "checkBattlerGroup": "player",
+                "haveStatus": "Power+"
+            },
+            "effects": 
+                {
+                    "removeStatus": "Regen"
+                }
+        },
+        {
+            "trigger": "onTurnStart",
+            "condition": {
+                "checkBattlerGroup": "player",
                 "stat": "snakeShield",
                 "operator": "<",
                 "value": 0
@@ -65,10 +76,10 @@
         }
 
     ],
-    "characters": [
+    "battlers": [
         {
-            "name": "A",
-            "characterType": "player",
+            "name": "player",
+            "battlerType": "player",
             "targetType": "enemy",
             "inBattle": true,
             "stats": {
@@ -80,14 +91,14 @@
                 "defense": 0,
                 "snakeShield": 0
             },
-            "skills": ["attack"],
+            "skills": ["defend"],
             "status": []
         },
         {
-            "name": "B",
-            "characterType": "player",
+            "name": "player2",
+            "battlerType": "player",
             "targetType": "enemy",
-            "inBattle": true,
+            "inBattle": false,
             "stats": {
                 "health": 10,
                 "maxHealth": 10,
@@ -96,13 +107,13 @@
                 "speed": 10,
                 "defense": 50
             },
-            "skills": ["heal"],
+            "skills": ["heal","attack"],
             "status": []
         },
         {
-            "name": "C",
+            "name": "enemy",
             "inBattle": true,
-            "characterType": "enemy",
+            "battlerType": "enemy",
             "targetType": "player",
             "stats": {
                 "health": 50,
@@ -116,9 +127,9 @@
             "status": []
         },
         {
-            "name": "D",
+            "name": "enemy2",
             "inBattle": true,
-            "characterType": "enemy",
+            "battlerType": "enemy",
             "targetType": "player",
             "stats": {
                 "health": 50,
@@ -128,7 +139,7 @@
                 "speed": 10,
                 "defense": 0
             },
-            "skills": ["heal"],
+            "skills": ["attack"],
             "status": []
         }
     ],
@@ -139,9 +150,10 @@
             "effects": [
                 {
                     "value": "ceil(max(0, (a_attack * 4) * (1 - b_defense / 100)))",
-                    "targetSkill": "all",
+                    "targetSkill": "enemy",
                     "targetStat": "health",
-                    "operator": "-"
+                    "operator": "-",
+                    "removeStatus": {"nameStatus": "Guard", "stacks": 3}
                 }
             ]
         },
@@ -324,7 +336,7 @@
             {
                 "stat": "attack",
                 "operator": "+",
-                "value": 1
+                "value": 25
             }]
         }
     ],

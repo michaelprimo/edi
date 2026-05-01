@@ -1,283 +1,146 @@
-import { checkRuleCondition } from '.././engine/rules.js';
 import { shuffleObjects } from '.././engine/turnsystem.js';
-import { validateData } from '.././engine/validateData.js';
-import { checkStatus } from './status.js';
-import { getDamageValueFromFormula, applySkillDamageFormula } from './damage.js';
+import { calculateSkillEffect } from './damage.js';
 import { triggerActions } from './trigger.js';
 import { getTargetForSkill } from './target.js';
 import { getSkilltoUse } from './skills.js';
 import { setupGame } from './setup.js';
 import { Logger } from './log.js';
 import { Agents } from './JSONdata.js';
+import { applyTargetStatusFromSkillEffect, removeTargetStatusFromSkillEffect } from './status.js';
 
 export function runEngine(JSONData)
+{
+    //create an isolated clone of the JSON data so we can duplicate and manipulate it at will without problems
+    const data = structuredClone(JSONData);
+
+    const agents = new Agents();
+    agents.log(data.agent);
+
+    //we start setting up the log manager that makes us see the content on what's happening on screen
+    const logger = new Logger();
+    //here we add some special fields on the data and making checks of it
+    setupGame(data);
+
+     //let's put in this variable the characters of the game, removing the other ones out of the battle
+    let currentCharacters = putcharactersInBattle(structuredClone(data.characters));
+    //let's check if in the agent section of the JSON we see some agents to push in our characters.
+    currentCharacters = putAgentsincharacters(data, currentCharacters);
+
+    //we put the skill chosen by the character here.
+    let selectedSkill;
+    //when this variable will be populated with winners and losers of the game, the simulation will end
+    let checkRules = undefined;
+    
+
+    //----------the main cycle of the simulation, to check if we can remove the checkRules check to something like "stopSimulation === false"
+    while((checkRules === undefined || checkRules === null) && data.game.turns <= data.game.maxSimulationTurns)
     {
-        //create an isolated clone of the JSON data so we can duplicate and manipulate it at will without problems
-        const data = structuredClone(JSONData);
+        data.game.turns++;
+        logger.log("showTurns", { numberOfTurnsPassed: data.game.turns });
 
-        const agents = new Agents();
+        //we need both for getting the turn order based on the battle system selected
+        currentCharacters = shuffleObjects(currentCharacters, data.game);
         
-        agents.log(data.agent);
-        //we start setting up the log manager that makes us see the content on what's happening on screen
-        const logger = new Logger();
-        //here we add some special fields on the data and making checks of it
-        setupGame(data);
+        checkRules = triggerActions(data, currentCharacters, "onTurnStart");
 
-        let currentBattlers = putBattlersInBattle(structuredClone(data.battlers));
-        currentBattlers = putAgentsinBattlers(data, currentBattlers);
-        let currentBattlers_turnStartState = structuredClone(currentBattlers); 
-        let selectedSkill;
-        let checkRules = undefined;
-        let getWinners;
-        let statusAddedFromSkill;
-        let statusInstance;
-        let stopSimulation = false;
-        
-        while((checkRules === undefined || checkRules === null) && data.game.turns <= data.game.maxSimulationTurns)
+        //every character move in their turns
+        for(let i = 0; i < currentCharacters.length; i++)
         {
-            data.game.turns++;
-            currentBattlers_turnStartState = structuredClone(currentBattlers);
-            logger.log("showTurns", { numberOfTurnsPassed: data.game.turns });
-            
-            currentBattlers = shuffleObjects(currentBattlers, data.game);
-            checkRules = triggerActions(data, currentBattlers,  "onTurnStart");
-            
-            for(let i = 0; i<currentBattlers.length; i++)
+            checkRules = triggerActions(data, currentCharacters, "onActionStart");
+            logger.log("characterTurnStart", {
+                "characterName": currentCharacters[i].name,
+                "characterstats": JSON.stringify(currentCharacters[i].stats),
+                "characterstatus": JSON.stringify(currentCharacters[i].status)
+            });
+
+            //we are checking if the character is stunned or not. If it's stunned, the character won't act otherwise proceed
+            if(currentCharacters[i].stats.canHaveTurns === true)
             {
-                checkRules = triggerActions(data, currentBattlers,  "onActionStart");
-                logger.log("battlerTurnStart", {
-                        "battlerName": currentBattlers[i].name, 
-                        "battlerStats": JSON.stringify(currentBattlers[i].stats),
-                        "battlerStatus": JSON.stringify(currentBattlers[i].status)
-                    });
-        
-                if(currentBattlers[i].stats.canHaveTurns === true)
+                //let's find the skill to use
+                selectedSkill = getSkilltoUse(currentCharacters[i], currentCharacters);
+                
+                //if the character has a skill ready, this will happen. 
+                if(selectedSkill !== undefined)
                 {
-                    selectedSkill = getSkilltoUse(currentBattlers[i], currentBattlers);
-                    
-                    if(selectedSkill)
+                    logger.log("skillUse", {
+                        "characterName": currentCharacters[i].name,
+                        "characterskillName": selectedSkill.name
+                    });
+
+                    //select the target of the skill
+                    const chooseTarget = getTargetForSkill(currentCharacters, currentCharacters[i], selectedSkill);
+
+                    console.log("chooseTarget: ", chooseTarget);
+                    //apply the effect for each target
+                    for(let j = 0; j < chooseTarget.length; j++)
                     {
-                        logger.log("skillUse", 
+                        if(chooseTarget[j] === undefined) continue;
+
+                        //apply each skill effect on the target
+                        for(let k = 0; k < selectedSkill.effects.length; k++)
                         {
-                            "battlerName": currentBattlers[i].name,
-                            "battlerSkillName": selectedSkill.name
-                        });
-
-                        let chooseTarget = getTargetForSkill(currentBattlers, currentBattlers[i], selectedSkill);
-                        
-
-                        for(let j = 0; j<chooseTarget.length; j++)
-                        {
-                            if(chooseTarget[j] !== undefined)
-                            {
-
-                                for(let k = 0; k<selectedSkill.effects.length; k++)
-                                {
-
-                                    let damageValueFromSkillFormula = getDamageValueFromFormula(selectedSkill.effects[k].value, currentBattlers[i], chooseTarget[j]);
-
-                                    chooseTarget[j].stats[selectedSkill.effects[k].targetStat] = applySkillDamageFormula(chooseTarget[j].stats[selectedSkill.effects[k].targetStat], damageValueFromSkillFormula, selectedSkill.effects[k].operator);
-                                    
-                                    switch(selectedSkill.effects[k].operator)
-                                    {
-                                        case "+":
-                                            logger.log("damageHealedWithSkill", 
-                                            {
-                                                "targetName": chooseTarget[j].name, "damageAmount": damageValueFromSkillFormula
-                                            });
-                                            break;
-                                        case "-":
-                                            logger.log("damageDealtWithSkill", 
-                                            {
-                                                "targetName": chooseTarget[j].name, "damageAmount": damageValueFromSkillFormula
-                                            });
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                    
-                                    const applyStatusEntries = selectedSkill.effects[k].applyStatus
-                                        ? (Array.isArray(selectedSkill.effects[k].applyStatus) ? selectedSkill.effects[k].applyStatus : [selectedSkill.effects[k].applyStatus])
-                                        : [];
-                                    if(applyStatusEntries.length > 0)
-                                    {
-                                        if (!chooseTarget[j].status) 
-                                        {
-                                            chooseTarget[j].status = [];
-                                        }
-
-                                        for(const applyStatusEntryRaw of applyStatusEntries)
-                                        {
-                                            const applyStatusEntry = typeof applyStatusEntryRaw === "string"
-                                                ? { nameStatus: applyStatusEntryRaw }
-                                                : applyStatusEntryRaw;
-                                            if(!applyStatusEntry?.nameStatus)
-                                            {
-                                                continue;
-                                            }
-
-                                            statusAddedFromSkill = data.status.find(chosenStatus => chosenStatus.name === applyStatusEntry.nameStatus);
-                                            if(!statusAddedFromSkill)
-                                            {
-                                                continue;
-                                            }
-
-                                            let checkIfStatusExists = chooseTarget[j].status.find(findStatus => findStatus.name === applyStatusEntry.nameStatus);
-                                            const stacksToAdd = applyStatusEntry.stacks ?? 1;
-                                            if(checkIfStatusExists === undefined)
-                                            {
-                                                statusInstance = structuredClone(statusAddedFromSkill);
-                                                if(!statusInstance.stacks)
-                                                {
-                                                    statusInstance.stacks = 0;
-                                                }
-                                                statusInstance.stacks += stacksToAdd;
-                                                
-                                                if(statusInstance.maxStacks !== undefined && statusInstance.stacks > statusInstance.maxStacks)
-                                                {
-                                                    statusInstance.stacks = statusInstance.maxStacks; 
-                                                }
-                                                chooseTarget[j].status.push(statusInstance);
-                                            }
-                                            else
-                                            {
-                                                if(!checkIfStatusExists.stacks)
-                                                {
-                                                    checkIfStatusExists.stacks = 0;
-                                                }
-
-                                                checkIfStatusExists.stacks += stacksToAdd;
-                                                if(checkIfStatusExists.maxStacks !== undefined && checkIfStatusExists.stacks > checkIfStatusExists.maxStacks)
-                                                {
-                                                    checkIfStatusExists.stacks = checkIfStatusExists.maxStacks;
-                                                }
-
-                                                if(statusAddedFromSkill.turns !== undefined && statusAddedFromSkill.turns >= 0)
-                                                {
-                                                    checkIfStatusExists.turns = statusAddedFromSkill.turns;
-                                                }
-                                            }
-                                        }
-                                    } 
-
-                                    const removeStatusEntries = selectedSkill.effects[k].removeStatus
-                                        ? (Array.isArray(selectedSkill.effects[k].removeStatus) ? selectedSkill.effects[k].removeStatus : [selectedSkill.effects[k].removeStatus])
-                                        : [];
-                                    if(removeStatusEntries.length > 0)
-                                    {
-                                        if(!chooseTarget[j].status || chooseTarget[j].status.length === 0)
-                                        {
-                                            continue;
-                                        }
-
-                                        for(const removeStatusEntryRaw of removeStatusEntries)
-                                        {
-                                            let removeStatusName;
-                                            let stacksToRemove;
-
-                                            if(typeof removeStatusEntryRaw === "string")
-                                            {
-                                                removeStatusName = removeStatusEntryRaw;
-                                            }
-                                            else
-                                            {
-                                                removeStatusName = removeStatusEntryRaw?.nameStatus;
-                                                stacksToRemove = removeStatusEntryRaw?.stacks;
-                                            }
-
-                                            if(!removeStatusName)
-                                            {
-                                                continue;
-                                            }
-
-                                            const statusToRemove = chooseTarget[j].status.find(findStatus => findStatus.name === removeStatusName);
-                                            if(!statusToRemove)
-                                            {
-                                                continue;
-                                            }
-
-                                            // If stacks are not provided, remove the whole status.
-                                            if(stacksToRemove === undefined || stacksToRemove === null)
-                                            {
-                                                chooseTarget[j].status = chooseTarget[j].status.filter(s => s.name !== removeStatusName);
-                                            }
-                                            else
-                                            {
-                                                if(!statusToRemove.stacks)
-                                                {
-                                                    statusToRemove.stacks = 0;
-                                                }
-
-                                                statusToRemove.stacks -= stacksToRemove;
-                                                if(statusToRemove.stacks <= 0)
-                                                {
-                                                    chooseTarget[j].status = chooseTarget[j].status.filter(s => s.name !== removeStatusName);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                
-                            }
-                        }
-                        checkRules = triggerActions(data, currentBattlers,  "onActionEnd");
-                        if(data.game.turns >= data.game.maxSimulationTurns)
-                        {
-                            checkRules = "draw";
-                            return { checkRules, logs: logger.getLogs() };
-                        }
-                        if(checkRules !== null)
-                        {
-                            console.log("checkRules: ", checkRules);
-                            const winnersEntry = checkRules.find(r => r.winners !== undefined);
-                            const losersEntry = checkRules.find(r => r.losers !== undefined);
-                            
-                            if(winnersEntry)
-                            {
-                                logger.log("declareWinners", { "winners": winnersEntry.winners[0].battlerType });
-                            }
-                            if(losersEntry)
-                            {
-                                logger.log("declareLosers", { "losers": losersEntry.losers[0].battlerType });
-                            }
-                            return { checkRules, logs: logger.getLogs() };
+                            calculateSkillEffect(selectedSkill.effects[k], logger, chooseTarget[j], currentCharacters[i]);
+                            applyTargetStatusFromSkillEffect(data.status, selectedSkill.effects[k], currentCharacters[i], chooseTarget[j], currentCharacters, logger);
+                            removeTargetStatusFromSkillEffect(selectedSkill.effects[k], currentCharacters[i], chooseTarget[j], currentCharacters, logger);
                         }
                     }
+
+                    checkRules = triggerActions(data, currentCharacters, "onActionEnd");
+                    if(data.game.turns >= data.game.maxSimulationTurns)
+                    {
+                        checkRules = "draw";
+                        return { checkRules, logs: logger.getLogs() };
+                    }
+                    if(checkRules !== null)
+                    {
+                        const winnersEntry = checkRules.find(r => r.winners !== undefined);
+                        const losersEntry = checkRules.find(r => r.losers !== undefined);
+
+                        if(winnersEntry) logger.log("declareWinners", { "winners": winnersEntry.winners[0].characterType });
+                        if(losersEntry) logger.log("declareLosers", { "losers": losersEntry.losers[0].characterType });
+                        return { checkRules, logs: logger.getLogs() };
+                    }
                 }
+                //here the character doesn't have a skill ready to use
                 else
                 {
-                    logger.log("noResources", {"battlerName": currentBattlers[i].name});
+                    logger.log("noResources", {"characterName": currentCharacters[i].name});
                 }
             }
-                triggerActions(data, currentBattlers,  "onTurnEnd");
+            else
+            {
+                //---------------------------------defeated or stunned
+                logger.log("noResources", {"characterName": currentCharacters[i].name});
+            }
         }
-             
+        triggerActions(data, currentCharacters, "onTurnEnd");
     }
-
-function putBattlersInBattle(currentBattlers)
-{
-    let battlersInBattle = [];
-
-    currentBattlers.forEach(battler => 
-    {
-        if(battler.inBattle === true)
-        {
-            battlersInBattle.push(battler);
-        }
-    });
-    return battlersInBattle;
 }
 
-function putAgentsinBattlers(data, currentBattlers)
+function putcharactersInBattle(currentCharacters)
+{
+    let charactersInBattle = [];
+    currentCharacters.forEach(character =>
+    {
+        if(character.inBattle === true)
+        {
+            charactersInBattle.push(character);
+        }
+    });
+    return charactersInBattle;
+}
+
+function putAgentsincharacters(data, currentCharacters)
 {
     data.agent.forEach(agent => {
-        currentBattlers.forEach(battler => {
-            if(battler.name === agent.assignTo)
+        currentCharacters.forEach(character => {
+            if(character.name === agent.assignTo)
             {
-                battler.agent = agent.behaviour;
+                character.agent = agent.behaviour;
             }
         });
     });
-    
-    return currentBattlers;
+
+    return currentCharacters;
 }
+
