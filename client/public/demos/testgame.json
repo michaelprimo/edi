@@ -203,7 +203,25 @@
             "effects": [
                 {
                     "value": "ceil(max(0, (a_attack * 4) * (1 - b_defense / 100)))",
-                    "targetSkill": "allTargets",
+                    "targetSkill": "enemy",
+                    "targetStat": "health",
+                    "operator": "-"
+                },
+                {
+                    "value": "ceil(max(0, (a_attack * 4) * (1 - b_defense / 100)))",
+                    "targetSkill": "all",
+                    "targetStat": "health",
+                    "operator": "-"
+                },
+                {
+                    "value": "ceil(max(0, (a_attack * 4) * (1 - b_defense / 100)))",
+                    "targetSkill": "ally",
+                    "targetStat": "health",
+                    "operator": "-"
+                },
+                {
+                    "value": "ceil(max(0, (a_attack * 4) * (1 - b_defense / 100)))",
+                    "targetSkill": "enemy",
                     "targetStat": "health",
                     "operator": "-"
                 }

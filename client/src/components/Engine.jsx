@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { runEngine } from '.././engine/engine.js';
 import { validateData } from '.././engine/validateData.js';
- 
+import '../index.css';
+
 export default function Engine({ JSONData, simulations = 100, showLogs = false })
 {
     const [winRates, setWinRates] = useState([]);
@@ -69,7 +70,7 @@ export default function Engine({ JSONData, simulations = 100, showLogs = false }
     return (
         <div>
             <h3>Win Rates ({simulations} simulazioni)&nbsp;
-                <button onClick={() => setSeed(s => s + 1)}>Riesegui</button>
+                <button className="ediButton" onClick={() => setSeed(s => s + 1)}>Riesegui</button>
             </h3>
             <p>Seed: {seed}</p>
             {winRates.length === 0

@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 //we will pass everything here to this component, the core of Edi
 import Engine from "./Engine";
-
+import '../index.css';
 // Add new demos here in the future
 const DEMO_LIST = [
     { label: "Test Game", path: "/demos/testgame.json" },
@@ -95,9 +95,10 @@ const Home = () => {
 
     return (
         <div>
+            <h1 className="specialText">Edi v.0.1.7</h1>
             <div style={{ marginBottom: "1rem", display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
                 {/* Demo selector */}
-                <select value={selectedDemo} onChange={handleDemoChange}>
+                <select className="ediButton" value={selectedDemo} onChange={handleDemoChange}>
                     {DEMO_LIST.map((demo) => (
                         <option key={demo.path} value={demo.path}>
                             {demo.label}
@@ -105,14 +106,15 @@ const Home = () => {
                     ))}
                 </select>
 
-                <button onClick={handleDownloadDemo}>
+                <button className="ediButton" onClick={handleDownloadDemo}>
                     Download demo
                 </button>
 
-                <button onClick={() => fileInputRef.current?.click()}>
+                <button className="ediButton" onClick={() => fileInputRef.current?.click()}>
                     Import JSON
                 </button>
                 <input
+                className="ediButton"
                     type="file"
                     accept=".json"
                     ref={fileInputRef}
@@ -123,6 +125,7 @@ const Home = () => {
                 <label>
                     Simulations:&nbsp;
                     <input
+                    className="ediButton"
                         type="number"
                         min={1}
                         value={simulations}
@@ -131,17 +134,17 @@ const Home = () => {
                     />
                 </label>
 
-                <button onClick={() => setShowLogs((prev) => !prev)}>
+                <button className="ediButton" onClick={() => setShowLogs((prev) => !prev)}>
                     {showLogs ? "Hide logs" : "Show logs"}
                 </button>
             </div>
 
             {loading && <p>Loading...</p>}
-            {error && <p style={{ color: "red" }}>{error}</p>}
+            {error && <p >{error}</p>}
 
             {!loading && !error && demoData && (
                 <div>
-                    <h2>{currentLabel}: {demoData.game?.name}</h2>
+                    <h2 className="specialText">{currentLabel}: {demoData.game?.name}</h2>
                     <Engine JSONData={demoData} simulations={simulations} showLogs={showLogs} />
                 </div>
             )}

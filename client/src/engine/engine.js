@@ -68,22 +68,20 @@ export function runEngine(JSONData)
                     });
 
                     //select the target of the skill
-                    const chooseTarget = getTargetForSkill(currentCharacters, currentCharacters[i], selectedSkill);
+                    let chooseTarget;
 
-                    console.log("chooseTarget: ", chooseTarget);
-                    //apply the effect for each target
-                    for(let j = 0; j < chooseTarget.length; j++)
+                    //apply each skill effect on the target
+                    for(let k = 0; k < selectedSkill.effects.length; k++)
                     {
-                        console.log("length: ", chooseTarget.length);
-                        if(chooseTarget[j] === undefined) continue;
-
-                        //apply each skill effect on the target
-                        for(let k = 0; k < selectedSkill.effects.length; k++)
+                        chooseTarget = getTargetForSkill(currentCharacters, currentCharacters[i], selectedSkill, k);
+                        console.log("target:", chooseTarget);
+                        for(let j = 0; j < chooseTarget.length; j++)
                         {
                             calculateSkillEffect(selectedSkill.effects[k], logger, chooseTarget[j], currentCharacters[i]);
                             applyTargetStatusFromSkillEffect(data.status, selectedSkill.effects[k], currentCharacters[i], chooseTarget[j], currentCharacters, logger);
                             removeTargetStatusFromSkillEffect(selectedSkill.effects[k], currentCharacters[i], chooseTarget[j], currentCharacters, logger);
                         }
+                        
                     }
 
                     checkRules = triggerActions(data, currentCharacters, "onActionEnd");

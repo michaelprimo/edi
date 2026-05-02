@@ -8,7 +8,6 @@ function App() {
   return (
     <>
       <div>
-        <h1>Debug Area</h1>
         <Home />
       </div>
     </>

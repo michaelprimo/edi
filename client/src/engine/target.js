@@ -15,18 +15,17 @@ function getRandomTarget(array)
     return [array[Math.floor(Math.random() * array.length)]];
 }
 
-export function getTargetForSkill(currentCharacters, character, selectedSkill)
+export function getTargetForSkill(currentCharacters, character, selectedSkill, k)
 {
     const targetTypes = putAllTargetsOfAllSkillEffectsOnArray(selectedSkill);
+    console.log("targets:", targetTypes[k], " k: ", k, "normal targetTypes: ", targetTypes);
     const getOpponentTargets = currentCharacters.filter(c => c.characterType === character.targetType && isValidTarget(c, selectedSkill));
     const getFriendlyTargets = currentCharacters.filter(c => c.characterType === character.characterType && isValidTarget(c, selectedSkill));
     const getFriendlyTargetsExceptSelf = currentCharacters.filter(c => c.characterType === character.characterType && c !== character && isValidTarget(c, selectedSkill));
     const getOtherTargets = currentCharacters.filter(c => c.characterType !== character.characterType && isValidTarget(c, selectedSkill));
     let targetCharacters = [];
 
-    targetTypes.forEach(type =>
-    {
-        switch(type)
+        switch(targetTypes[k])
         {
             case "all":
             {
@@ -75,8 +74,7 @@ export function getTargetForSkill(currentCharacters, character, selectedSkill)
                 targetCharacters = [...targetCharacters, character];
                 break;
             }
-        }
-    });
+        };
 
     return targetCharacters;
 }

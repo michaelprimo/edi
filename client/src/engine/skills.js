@@ -46,5 +46,6 @@ export function getSkilltoUse(character, currentCharacters)
 
 export function putAllTargetsOfAllSkillEffectsOnArray(selectedSkill)
 {
-    return [...new Set(selectedSkill.effects.map(e => e.targetSkill))];
+    console.log(selectedSkill.effects.map(e => e.targetSkill));
+    return selectedSkill.effects.map(e => e.targetSkill);
 }
